@@ -260,7 +260,7 @@ def density_diagnostic(f_3729, f_3726):
     
     density_data = np.loadtxt("Figures/density_diagnostic_3729_3726_ratio.txt")
     dens = density_data[:,0]
-    intensity = [:,1]
+    intensity = data[:,1]
     idx = find_nearest(wv = intensity, value = f_3729/f_3726)
     
     density = dens[idx]
