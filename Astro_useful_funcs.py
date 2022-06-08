@@ -307,3 +307,26 @@ def get_temp_density_diagnostic(f_5007, f_4959, f_4363, f_3729, f_3726):
     return {"density_odd_units": density_odd_units}
 
 #cosmological distance measurements
+
+def physical_dist_from_comoving_dist(comoving_dist, scale_factor):
+    '''inputs: comoving_dist-distance to object in comoving coordinates, scale_factor-scale factor of universe
+       outputs: physical_dist-physical distance to object (units are same as units in comoving_dist
+       this function takes in a comoving distance and gives a physical distance to an object. The units of the answer are the same as would come from comoving_dist'''
+       
+    
+    return comoving_dist*scale_factor
+    
+def z_from_scale_factor(a, a_0=1.0):
+    '''inputs: a-scale factor of universe at some time t, a_0-(optional) scale factor of universe at time 0-defaults to t = now and a_0=1.0
+       outputs: z-redshift measurement of the object at time t, when seen from time 0
+       This function gets the redhisft measurement of an object given the scale factor of the universe at that time. This function is flexible enough to get the redshift that one object in the past would see another object in the further past. We use the equation (1+z) = a_0/a'''
+    
+    return 1-(a_0/a)
+    
+def scale_factor_from_z(z, a_0 = 1.0):
+    '''inputs: z-redshift of an object in the distance, a_0-(optional) scale factor of the universe when the object was observed-defaults to a_0=1.0 corresponding to now
+       outputs: a-scale factor of the universe when this object emitted the light being observed
+       This function turns a redshift into a scale factor using the equation (1+z) = a_0/a'''
+
+    return a_0/(1+z)
+    
