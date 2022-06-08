@@ -2,10 +2,17 @@ import numpy as np
 import math
 
 
+G_SI = 6.674E-11 #Universal gravitational constant G in SI units N*m^2/kg^2
+G_cgs = 6.674E-8 #Universal gravitational constant G in cgs units dyne*cm^2/g^2
+
 H_0_km_s_Mpc = 67.37 #hubble constant in units of km/s/Mpc
 H_0_hz = 2.1833E-18 #hubble constant in units of 1/sec, this is useful for SI unit calculations
 H_0 = H_0_km_s_Mpc
 H_0_SI = H_0_hz
+
+h = H_0_km_s_Mpc/100 #dimensionless h constant for Hubble constant
+rho_crit_SI = H_0_SI**2*3/(8*np.pi*G_SI) #critical density of the universe in SI units
+rho_crit_cgs = 1.9E-29*h #in cgs units of g/cm3
 
 Omega_M = 0.3147 #mass density of the universe
 Omega_Lambda = 0.6847 #dark energy density of universe
@@ -373,7 +380,7 @@ def milne_lookback_time(z, hubble_const = H_0_SI):
     lookback_time_Gyr = time_dic['time_Gyr']
     return {"lookback_time_sec":lookback_time_sec, "lookback_time_yr":lookback_time_yr, "lookback_time_Gyr":lookback_time_Gyr}
 
-#proper distance versus luminosity distance versus all the other distances
+
 
 def de_sitter_lookback_time(z, hubble_const = H_0_SI):
     '''inputs: z-redshift of some distant object, hubble_const-(optional) current hubble constant of the universe-defaults to the value defined above
@@ -386,6 +393,10 @@ def de_sitter_lookback_time(z, hubble_const = H_0_SI):
     lookback_time_yr = time_dic['time_yr']
     lookback_time_Gyr = time_dic['time_Gyr']
     return {"lookback_time_sec":lookback_time_sec, "lookback_time_yr":lookback_time_yr, "lookback_time_Gyr":lookback_time_Gyr}
+
+
+#proper distance versus luminosity distance versus all the other distances
+
 
 #cosmological doppler shifts
 
