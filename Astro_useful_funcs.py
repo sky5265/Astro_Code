@@ -1,6 +1,19 @@
 import numpy as np
 import math
 
+
+H_0_km_s_Mpc = 67.37 #hubble constant in units of km/s/Mpc
+H_0_hz = 2.1833E-18 #hubble constant in units of 1/sec, this is useful for SI unit calculations
+H_0 = H_0_km_s_Mpc
+H_0_SI = H_0_hz
+
+Omega_M = 0.3147 #mass density of the universe
+Omega_Lambda = 0.6847 #dark energy density of universe
+Omega_k = 0.001
+t_0_Gyr = 13.797 #age of universe in Gyr
+t_0 = t_0_Gyr
+
+
 def find_nearest(wv,value):
     '''inputs: wv-list of data to look in, value-the value we are looking for in wv
        outputs: idx-index in wv that is closest to value
@@ -330,3 +343,51 @@ def scale_factor_from_z(z, a_0 = 1.0):
 
     return a_0/(1+z)
     
+#lookback time as a function of z, as a function of a
+
+def conv_time_sec(time_sec):
+    '''inputs: time_sec-time measured in seconds
+       outputs: time_dic-dictionary of time_sec converted into various units, including minutes, hours, solar days, years, Myr, and Gyr
+       This function converts time in seconds to a bunch of other units, returning all of them in a dictionary'''
+    
+    time_min = time_sec/60.0
+    time_hr = time_sec/3600.0
+    time_day = time_sec/86400.0
+    time_yr = time_day/365.24219
+    time_Myr = time_yr/1.0E6
+    time_Gyr = time_yr/1.0E9
+    
+    return {"time_sec":time_sec,"time_min":time_min, "time_hr":time_hr, "time_day":time_day, "time_yr": time_yr, "time_Myr":time_Myr, "time_Gyr":time_Gyr}
+
+}
+
+def milne_lookback_time(z, hubble_const = H_0_SI):
+    '''inputs: z-redshift of some distant object, hubble_const-(optional) current hubble constant of the universe-defaults to the value defined above
+       outputs: delta_t-dictionary of lookback time measurment from now (t_0) to some object at redshift z in various units
+       This function gets the lookback time to an object at redshift z using the equation t = (1/H_0)(1-1/(1+z)). Note that this assumes the Milne cosmology, which says that \rho = 0 and that the universe is empty of matter'''
+    
+    lookback_time_sec = (1.0/hubble_const)*(1.0-1.0/(1.0+z))
+    
+    time_dic = conv_time_sec(time_sec = lookback_time_sec)
+    lookback_time_yr = time_dic['time_yr']
+    lookback_time_Gyr = time_dic['time_Gyr']
+    return {"lookback_time_sec":lookback_time_sec, "lookback_time_yr":lookback_time_yr, "lookback_time_Gyr":lookback_time_Gyr}
+
+#proper distance versus luminosity distance versus all the other distances
+
+def de_sitter_lookback_time(z, hubble_const = H_0_SI):
+    '''inputs: z-redshift of some distant object, hubble_const-(optional) current hubble constant of the universe-defaults to the value defined above
+       outputs: delta_t-dictionary of lookback time measurment from now (t_0) to some object at redshift z in various units
+       This function gets the lookback time to an object at redshift z using the equation t = (2/3)(1/H_0)(1-(1+z)^(-3/2)). Note that this assumes the Einstein-de Sitter cosmology, which says that E = 0 and the universe is a critical universe, where total energy is zero'''
+       
+    lookback_time_sec = (2.0/3.0)*(1.0/hubble_const)*(1.0-(1.0+z)**(-1.5))
+    
+    time_dic = conv_time_sec(time_sec = lookback_time_sec)
+    lookback_time_yr = time_dic['time_yr']
+    lookback_time_Gyr = time_dic['time_Gyr']
+    return {"lookback_time_sec":lookback_time_sec, "lookback_time_yr":lookback_time_yr, "lookback_time_Gyr":lookback_time_Gyr}
+
+#cosmological doppler shifts
+
+
+
