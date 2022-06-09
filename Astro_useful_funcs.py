@@ -366,7 +366,7 @@ def conv_time_sec(time_sec):
     
     return {"time_sec":time_sec,"time_min":time_min, "time_hr":time_hr, "time_day":time_day, "time_yr": time_yr, "time_Myr":time_Myr, "time_Gyr":time_Gyr}
 
-}
+
 
 def milne_lookback_time(z, hubble_const = H_0_SI):
     '''inputs: z-redshift of some distant object, hubble_const-(optional) current hubble constant of the universe-defaults to the value defined above
