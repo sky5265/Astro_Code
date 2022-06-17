@@ -148,6 +148,28 @@ def radian_from_degree(angle_degree):
     '''
     return np.pi*angle_degree/180
     
+def deg_min_sec_from_degree(degree):
+    '''inputs: degree-angle measured in degrees
+       outputs: deg_min_sec-angle measured in units of degrees, minutes, seconds
+       This function converts an angle in units of degrees to degrees minutes and seconds'''
+       
+    deg = int(degree)
+    
+    deg_frac = degree-deg
+    minutes = deg_frac*60.
+    
+    minutes_frac = minutes-int(minutes)
+    secs = minutes_frac*60.
+    
+    if deg < 0:
+        minutes *= -1.0
+        secs *= -1.0
+    
+    return str(deg)+":"+str(int(minutes))+":"+str(round(secs, 4))
+    
+    
+    
+    
 def rad_from_degree_min_sec(angle_degree_min_sec):
     '''inputs: angle_degree_min_sec-angle measured in units of degrees, arcminutes, and arcseconds
        outputs: angle_rad-corresponding angle in radians
@@ -157,6 +179,10 @@ def rad_from_degree_min_sec(angle_degree_min_sec):
     deg_floor = float(GG[0])
     arc_min = float(GG[1])
     arc_sec = float(GG[2])
+    
+    if deg_floor < 0:
+        arc_min *= -1.0
+        arc_sec *= -1.0
 
     angle_deg = deg_floor + arc_min/60.+arc_sec/3600.
     
@@ -434,12 +460,18 @@ def radians_from_HHMMSS(angle_HHMMSS):
        
     g = angle_HHMMSS.split(":")
     HH = float(g[0])
+    
+    
     MM = float(g[1])
     SS = float(g[2])
     
-    print("HH: "+str(HH))
-    print("MM: "+str(MM))
-    print("SS: "+str(SS))
+    if HH < 0:
+        MM *= -1.0
+        SS *= -1.0
+    
+    #print("HH: "+str(HH))
+    #print("MM: "+str(MM))
+    #print("SS: "+str(SS))
     
     angle_frac = HH/24. + MM/(24.*60.) + SS/(24.*60.*60.)
     angle_rad = angle_frac * 2.*np.pi
@@ -454,6 +486,11 @@ def HHMMSS_from_radians(angle_rad):
        outputs: angle_HHMMSS-angle in units of HH:MM:SS
        This function turns an angle in radians into an angle in units of hours, minutes, seconds'''
 
+
+    if angle_rad < 0:
+        angle_rad += 2*np.pi
+        
+        
     angle_frac = angle_rad/(2.*np.pi)
     
     hours = angle_frac*24.
@@ -467,61 +504,44 @@ def HHMMSS_from_radians(angle_rad):
     return str(math.floor(hours))+":"+str(math.floor(mins))+":"+str(round(secs, 5))
 
 
-def equatorial_from_horizontal(altitude, azimuth, latitude, time_of_day, days_after_vernal_equinox):
+def equatorial_from_horizontal(altitude, azimuth, latitude_deg, time_of_day, days_after_vernal_equinox, longitude_deg, UTC_offset):
     '''inputs: altitude-altitude angle of some object in radians, azimuth-azimuth angle of some object in radians, latitude-latitude of location on Earth in radians
        outputs: RA-right ascension of the object in HH:MM:SS, dec-declination of the object in radians
        This function takes altitude, azimuth, and latitude to give the right ascension and declination of some object measured on the sky plane.'''
        
-       
-    print("altitude: "+str(altitude))
-    print("azimuth: "+str(azimuth))
-    print("lat: "+str(latitude))
-    print("time of day: "+str(time_of_day))
-    print("days_after..: "+str(days_after_vernal_equinox))
-    current_LST_hrs = get_LST(time_of_day = time_of_day, days_after_vernal_equinox = days_after_vernal_equinox)['LST_hrs']
     
-    print("current_LST_hrs: "+str(current_LST_hrs))
+    latitude = latitude_deg * np.pi/180.
+    #print("altitude: "+str(altitude))
+    #print("azimuth: "+str(azimuth))
+    #print("lat: "+str(latitude))
+    #print("time of day: "+str(time_of_day))
+    #print("days_after..: "+str(days_after_vernal_equinox))
+    
+    current_LST_hrs = get_LST(local_time_of_day = time_of_day, days_after_vernal_equinox = days_after_vernal_equinox, longitude_deg=longitude_deg, UTC_offset = UTC_offset)['LST_hrs']
+    
+    
+    #print("current_LST_hrs: "+str(current_LST_hrs))
     
     current_LST_radians = current_LST_hrs/24.*2*np.pi
     
-    print("current_LST_radians: "+str(current_LST_radians))
+    #print("current_LST_radians: "+str(current_LST_radians))
     
     #we'll use the equation sin(dec) = -cos(azimuth)*cos(altitude)*cos(lat) + sin(altitude)*sin(lat) to get declination first
     
     dec = math.asin(math.cos(azimuth)*math.cos(altitude)*math.cos(latitude)+math.sin(altitude)*math.sin(latitude)) #declination can only be between -np.pi/2 to np.pi/2, so there's no degeneracy in this function
     
-    print("dec: "+str(dec))
-    print("")
+    #print("dec: "+str(dec))
+    #print("")
     
-    #then I'll use cos(h)*cos(dec) = cos(azimuth)*cos(altitude)*sin(lat)+sin(altitude)*cos(lat) to get h1 and h2. h1 is just the acos(..) solution, h2 is the 2*pi-acos(...) solution
-    
-    h1 = math.acos((math.sin(altitude)*math.cos(latitude)-math.cos(azimuth)*math.cos(altitude)*math.sin(latitude))/math.cos(dec))
-    #h1 = math.acos((math.cos(azimuth)*math.cos(altitude)*math.sin(latitude)+math.sin(altitude)*math.cos(latitude))/math.cos(dec))
-    h2 = 2*np.pi-h1
-    
+
     #I need to use another equation to tell which of h1 or h2 is the correct right ascension
-    #I can use sin(h)*cos(dec) = sin(azimuth)*cos(altitude) to get h3 and h4, h3 is the asin(..) solution and h4 is the pi-asin(..) solution
+    #I can use sin(h)*cos(dec) = -sin(azimuth)*cos(altitude) to get h3, the asin(..) solution
     
     h3 = math.asin(-1.0*math.sin(azimuth)*math.cos(altitude)/math.cos(dec))
-    h4 = np.pi-h3
-    #h3 = h1
-    #h4 = h2
+
     
-    #there are going to be 2 among the four h1, h2, h3, and h4 that are going to be equal
-    A = [h1, h2, h3, h4]
-    
-    combo = (-1,-1)
-    hh1 = 999999.
-    
-    for i in range(len(A)):
-        for j in range(i+1, len(A)):
-            hh = A[i]-A[j]
-            if abs(hh) < hh1:
-                combo = (i, j)
-                hh1 = hh
-    print("a: "+str(A))
-    h_radians = A[combo[0]]
-    print("found h_radians: "+str(h_radians))
+    h_radians = h3
+    #print("found h_radians: "+str(h_radians)+" but I wanted to use: "+str(A[combo[0]]))
     
     RA_radians = current_LST_radians-h_radians
     RA_HHMMSS = HHMMSS_from_radians(RA_radians)
@@ -529,26 +549,62 @@ def equatorial_from_horizontal(altitude, azimuth, latitude, time_of_day, days_af
     dec_rad = dec
     dec_HHMMSS = HHMMSS_from_radians(dec_rad)
     dec_deg = dec_rad*180./np.pi
-    
+    dec_deg_m_s = deg_min_sec_from_degree(dec_deg)
     
     RA = RA_HHMMSS
-    dec = dec_deg
+    dec = dec_deg_m_s
+    
     return {"RA": RA, "dec": dec}
     
     
     
     
+def get_UTC_offset(longitude_deg):
+    '''inputs: longitude_deg-longitude of location in degrees (negative for west, positive for east)
+       outputs: UTC_offset-an integer telling how many hours to add to local time at this longitude to get UTC time
+       This function gives how many hours behind the longitude is from UTC time'''
+    from datetime import datetime
+    datetime.utcnow()
     
-def get_LST(time_of_day, days_after_vernal_equinox):
-    '''inputs: time_of_day-the time of day in format HH:MM:SS as a string, days_after_vernal_equinox-days since vernal equinox for the date in question
+    hours_offset = math.round(longitude/15)
+    
+    return hours_offset #negative 1 because we want how many hours <<to add>>
+    
+
+def get_LST(local_time_of_day, days_after_vernal_equinox, longitude_deg, UTC_offset = -45):
+    '''inputs: time_of_day-the time of day in format HH:MM:SS as a string, days_after_vernal_equinox-days since vernal equinox for the date in question, longitude_deg-the longitude of the location on Earth measured in degrees (negative for West and positive for East), UTC_offset-(optional) the number of hours to add to UTC to get local time this defaults to -45 and if it is set to -45 this will attempt to calculate UTC time using the longitude
        outputs: LST-corresponding local sidereal time of this time measure
        This function gets local sidereal time for a given time measurement on a given day. The equation I am using is LST = T + 12hours + (days after vernal equinox)*4 min'''
     
-    GG_TOD = time_of_day.split(":")
-    time_of_day_hrs = float(GG_TOD[0])+float(GG_TOD[1])/60.+float(GG_TOD[2])/3600.
+    GG_TOD = local_time_of_day.split(":")
+    local_time = float(GG_TOD[0])+float(GG_TOD[1])/60.+float(GG_TOD[2])/3600.
+    
+    #print("local time: "+str(local_time))
+    #1) go from local time to UTC
+    
+    if UTC_offset == -45:
+        UTC_offset = get_UTC_offset(longitude_deg = longitude_deg)
+    
+    UTC_time = local_time-UTC_offset
+    
+    #print("UTC time: "+str(UTC_time))
+    
+    
+    #2) get GST-sidereal time at the Greenwich meridian
+    
+    GST_hrs = (UTC_time + 12 + days_after_vernal_equinox*(3./60.+55./3600.))%24
+    #print("GST: "+str(GST_hrs))
+    
+    
+    #3) convert from GST to LST using the local longitude in HHMMSS format
+    
+    longitude_hrs = longitude_deg/360. * 24.
+    LST_hrs = GST_hrs+longitude_hrs
+    
+    
     
     #LST_hrs = time_of_day_hrs + 12 + days_after_vernal_equinox*4./60.
-    LST_hrs = (time_of_day_hrs + 12 + days_after_vernal_equinox*4./60.)%24.
+    #LST_hrs = (time_of_day_hrs + 12 + days_after_vernal_equinox*3.9333/60.)%24.
     
     LST_hr_floor = math.floor(LST_hrs)
     
@@ -559,29 +615,61 @@ def get_LST(time_of_day, days_after_vernal_equinox):
     
     LST_HHMMSS = str(LST_hr_floor)+":"+str(LST_mins_floor)+":"+str(LST_secs)
     
-    print("Hello")
-    
     return {"LST_HHMMSS": LST_HHMMSS, "LST_hrs": LST_hrs}
     
     
-def horizontal_from_equatorial(declination, RA, latitude, time_of_day, days_after_vernal_equinox):
+def get_LST_good(local_time, JD, longitude_deg, UTC_offset):
+    
+    GG_TOD = local_time.split(":")
+    local_time = float(GG_TOD[0])+float(GG_TOD[1])/60.+float(GG_TOD[2])/3600.
+    
+    #print("local time: "+str(local_time))
+    #1) go from local time to UTC
+    
+    if UTC_offset == -45:
+        UTC_offset = get_UTC_offset(longitude_deg = longitude_deg)
+    
+    UTC_time = local_time-UTC_offset
+    
+    T = (JD - 2451545)/36525
+    theta = 280.46061837 + 360.98564736629 * (JD - 2451545.0) + (0.000387933 * T * T) - (T * T * T / 38710000.0)
+    
+    A = theta*360/(2*np.pi) + longitude_deg
+    print("A: "+str(A*24/360 % 24))
+    
+    return theta%24
+    
+    
+
+def horizontal_from_equatorial(declination, RA, latitude_deg, time_of_day, days_after_vernal_equinox, longitude_deg, UTC_offset):
     #a is altitude, A is azimuth
     
-    current_LST_hrs = get_LST(time_of_day = time_of_day, days_after_vernal_equinox = days_after_vernal_equinox)['LST_hrs']
+    latitude = latitude_deg * np.pi/180.
+    
+    current_LST_hrs = get_LST(local_time_of_day = time_of_day, days_after_vernal_equinox = days_after_vernal_equinox, longitude_deg=longitude_deg, UTC_offset = UTC_offset)['LST_hrs']
+    
     current_LST_radians = (current_LST_hrs/24.)*2.*np.pi
-    print("declination: "+str(declination))
-    print("RA: "+str(RA))
-    print("current_LST_hrs: "+str(current_LST_hrs))
+    #print("declination: "+str(declination))
+    #print("RA: "+str(RA))
+    #print("current_LST_hrs: "+str(current_LST_hrs))
     
     h = current_LST_radians-RA #this works a good bit better if I subtract 0.5 from h
     
     
-    print("current_LST_radians:" +str(current_LST_radians))
-    print("RA: " +str(RA))
-    print("h: "+str(h))
+    
+    
+    #print("current_LST_radians:" +str(current_LST_radians))
+    #print("RA: " +str(RA))
+    #print("h: "+str(h))
     
     
     a = math.asin(math.cos(h)*math.cos(declination)*math.cos(latitude)+math.sin(declination)*math.sin(latitude))
     
-    return{"alt": a*180./np.pi}
+    #use cos(a)*sin(A) = -cos(delta)*sin(H)
+    A = math.asin(-1.0*math.cos(declination)*math.sin(h)/math.cos(a))
+    
+    if A < 0:
+        A += 2.*np.pi
+    
+    return{"alt": deg_min_sec_from_degree(a*180./np.pi), "az":deg_min_sec_from_degree(A*180./np.pi)}
 
