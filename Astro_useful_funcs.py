@@ -147,7 +147,20 @@ def radian_from_degree(angle_degree):
        gets radians from degrees of an angle
     '''
     return np.pi*angle_degree/180
+    
+def rad_from_degree_min_sec(angle_degree_min_sec):
+    '''inputs: angle_degree_min_sec-angle measured in units of degrees, arcminutes, and arcseconds
+       outputs: angle_rad-corresponding angle in radians
+       This function gets radians from an angle given in units of degreesArcminArcsec'''
+       
+    GG = angle_degree_min_sec.split(":")
+    deg_floor = float(GG[0])
+    arc_min = float(GG[1])
+    arc_sec = float(GG[2])
 
+    angle_deg = deg_floor + arc_min/60.+arc_sec/3600.
+    
+    return radian_from_degree(angle_deg)
 
 def energy_from_wavelength(lam_m):
     '''inputs: lam_m-wavelength in METERS that we want the energy of
@@ -207,7 +220,11 @@ def clean_number(num_to_clean, num_digits = 5):
     '''inputs: num_to_clean-the number to be cleaned and be made to look pretty, clean_arg-default to 5, if passed can set how many digits to have in the number
        outputs: cleaned_num-number that has been processed and will be returned
        this function takes in a number that may be very large (13678323450) or very small (0.00000000554) or have some extra small digit added to it (4534.00000001) and will return a pretty version of the same number as a float'''
-       
+    try:
+        num_to_clean = float(num_to_clean)
+    except ValueError as e:
+        return num_to_clean
+    
     if num_to_clean > 1:
         #looks like 457832948598 or maybe like 54783928457394.0000004 or like 548372945833.45387438532
         #either way, it needs to look like 5.6584E16 or whatever-specifically, with only clean_arg-1 digits after the decimal
@@ -216,7 +233,7 @@ def clean_number(num_to_clean, num_digits = 5):
         C = round(num_to_clean/10.**power, num_digits-1)
         cleaned_num = float(str(C)+"E"+str(power))
     else:
-        #looks like 0.0438298 or 0.33333333331 or whatever. This bit is easy, we just need to round the decimal
+        #looks like 0.0438298 or 0.33333333331 or whatever. This bit is easy, we just need to round the decimal, if the rounded version is just zero, we'll have to mess around a little
         cleaned_num = round(num_to_clean, num_digits-1)
     return cleaned_num
     
@@ -224,7 +241,14 @@ def str_clean_number(num_to_clean, num_digits = 5, max_power = 4):
     '''inputs: num_to_clean-the number to be cleaned and be made to look pretty, num_digits-default to 5, if passed can set how many digits to have in the number, max_power-default to 3, if passed can set maximum power to display without scientific notation
        outputs: cleaned_num-number that has been processed and will be returned
        this function takes in a number that may be very large (13678323450) or very small (0.00000000554) or have some extra small digit added to it (4534.00000001) and will return a pretty version of the same number as a string, so it can be displayed'''
-       
+    try:
+        num_to_clean = float(num_to_clean)
+    except ValueError as e:
+        return num_to_clean
+    
+    
+    if num_to_clean == 0.0:
+        return "0.0"
     if num_to_clean > 1:
         #looks like 457832948598 or maybe like 54783928457394.0000004 or like 548372945833.45387438532
         #either way, it needs to look like 5.6584E16 or whatever-specifically, with only clean_arg-1 digits after the decimal
@@ -238,6 +262,15 @@ def str_clean_number(num_to_clean, num_digits = 5, max_power = 4):
     else:
         #looks like 0.0438298 or 0.33333333331 or whatever. This bit is easy, we just need to round the decimal
         cleaned_num = str(round(num_to_clean, num_digits-1))
+        
+        
+        if cleaned_num == "0.0" and num_to_clean != 0.0:
+            cleaned_num = str(num_to_clean)[0:num_digits]
+            power = math.floor(np.log10(num_to_clean))
+            
+            C = round(num_to_clean/10.**power, num_digits-1)
+            
+            cleaned_num = str(C)+"E"+str(power)
     return cleaned_num
     
 #reddening, de-reddening
@@ -394,11 +427,161 @@ def de_sitter_lookback_time(z, hubble_const = H_0_SI):
     lookback_time_Gyr = time_dic['time_Gyr']
     return {"lookback_time_sec":lookback_time_sec, "lookback_time_yr":lookback_time_yr, "lookback_time_Gyr":lookback_time_Gyr}
 
+def radians_from_HHMMSS(angle_HHMMSS):
+    '''inputs: angle_HHMMSS-angle in units of HH:MM:SS
+       outputs: angle_rad-the angle passed in units of radians
+       This function turns an angle in units of hours, minutes, seconds into an angle in radians'''
+       
+    g = angle_HHMMSS.split(":")
+    HH = float(g[0])
+    MM = float(g[1])
+    SS = float(g[2])
+    
+    print("HH: "+str(HH))
+    print("MM: "+str(MM))
+    print("SS: "+str(SS))
+    
+    angle_frac = HH/24. + MM/(24.*60.) + SS/(24.*60.*60.)
+    angle_rad = angle_frac * 2.*np.pi
+    
+    return angle_rad
+       
+    
 
-#proper distance versus luminosity distance versus all the other distances
+
+def HHMMSS_from_radians(angle_rad):
+    '''inputs: angle_rad-the angle passed in units of radians
+       outputs: angle_HHMMSS-angle in units of HH:MM:SS
+       This function turns an angle in radians into an angle in units of hours, minutes, seconds'''
+
+    angle_frac = angle_rad/(2.*np.pi)
+    
+    hours = angle_frac*24.
+    frac_hours = hours - math.floor(hours)
+    
+    mins = frac_hours * 60.
+    frac_mins = mins - math.floor(mins)
+    
+    secs = frac_mins * 60.
+    
+    return str(math.floor(hours))+":"+str(math.floor(mins))+":"+str(round(secs, 5))
 
 
-#cosmological doppler shifts
-
-
+def equatorial_from_horizontal(altitude, azimuth, latitude, time_of_day, days_after_vernal_equinox):
+    '''inputs: altitude-altitude angle of some object in radians, azimuth-azimuth angle of some object in radians, latitude-latitude of location on Earth in radians
+       outputs: RA-right ascension of the object in HH:MM:SS, dec-declination of the object in radians
+       This function takes altitude, azimuth, and latitude to give the right ascension and declination of some object measured on the sky plane.'''
+       
+       
+    print("altitude: "+str(altitude))
+    print("azimuth: "+str(azimuth))
+    print("lat: "+str(latitude))
+    print("time of day: "+str(time_of_day))
+    print("days_after..: "+str(days_after_vernal_equinox))
+    current_LST_hrs = get_LST(time_of_day = time_of_day, days_after_vernal_equinox = days_after_vernal_equinox)['LST_hrs']
+    
+    print("current_LST_hrs: "+str(current_LST_hrs))
+    
+    current_LST_radians = current_LST_hrs/24.*2*np.pi
+    
+    print("current_LST_radians: "+str(current_LST_radians))
+    
+    #we'll use the equation sin(dec) = -cos(azimuth)*cos(altitude)*cos(lat) + sin(altitude)*sin(lat) to get declination first
+    
+    dec = math.asin(math.cos(azimuth)*math.cos(altitude)*math.cos(latitude)+math.sin(altitude)*math.sin(latitude)) #declination can only be between -np.pi/2 to np.pi/2, so there's no degeneracy in this function
+    
+    print("dec: "+str(dec))
+    print("")
+    
+    #then I'll use cos(h)*cos(dec) = cos(azimuth)*cos(altitude)*sin(lat)+sin(altitude)*cos(lat) to get h1 and h2. h1 is just the acos(..) solution, h2 is the 2*pi-acos(...) solution
+    
+    h1 = math.acos((math.sin(altitude)*math.cos(latitude)-math.cos(azimuth)*math.cos(altitude)*math.sin(latitude))/math.cos(dec))
+    #h1 = math.acos((math.cos(azimuth)*math.cos(altitude)*math.sin(latitude)+math.sin(altitude)*math.cos(latitude))/math.cos(dec))
+    h2 = 2*np.pi-h1
+    
+    #I need to use another equation to tell which of h1 or h2 is the correct right ascension
+    #I can use sin(h)*cos(dec) = sin(azimuth)*cos(altitude) to get h3 and h4, h3 is the asin(..) solution and h4 is the pi-asin(..) solution
+    
+    h3 = math.asin(-1.0*math.sin(azimuth)*math.cos(altitude)/math.cos(dec))
+    h4 = np.pi-h3
+    #h3 = h1
+    #h4 = h2
+    
+    #there are going to be 2 among the four h1, h2, h3, and h4 that are going to be equal
+    A = [h1, h2, h3, h4]
+    
+    combo = (-1,-1)
+    hh1 = 999999.
+    
+    for i in range(len(A)):
+        for j in range(i+1, len(A)):
+            hh = A[i]-A[j]
+            if abs(hh) < hh1:
+                combo = (i, j)
+                hh1 = hh
+    print("a: "+str(A))
+    h_radians = A[combo[0]]
+    print("found h_radians: "+str(h_radians))
+    
+    RA_radians = current_LST_radians-h_radians
+    RA_HHMMSS = HHMMSS_from_radians(RA_radians)
+    
+    dec_rad = dec
+    dec_HHMMSS = HHMMSS_from_radians(dec_rad)
+    dec_deg = dec_rad*180./np.pi
+    
+    
+    RA = RA_HHMMSS
+    dec = dec_deg
+    return {"RA": RA, "dec": dec}
+    
+    
+    
+    
+    
+def get_LST(time_of_day, days_after_vernal_equinox):
+    '''inputs: time_of_day-the time of day in format HH:MM:SS as a string, days_after_vernal_equinox-days since vernal equinox for the date in question
+       outputs: LST-corresponding local sidereal time of this time measure
+       This function gets local sidereal time for a given time measurement on a given day. The equation I am using is LST = T + 12hours + (days after vernal equinox)*4 min'''
+    
+    GG_TOD = time_of_day.split(":")
+    time_of_day_hrs = float(GG_TOD[0])+float(GG_TOD[1])/60.+float(GG_TOD[2])/3600.
+    
+    #LST_hrs = time_of_day_hrs + 12 + days_after_vernal_equinox*4./60.
+    LST_hrs = (time_of_day_hrs + 12 + days_after_vernal_equinox*4./60.)%24.
+    
+    LST_hr_floor = math.floor(LST_hrs)
+    
+    LST_mins = (LST_hrs - LST_hr_floor)*60.
+    LST_mins_floor = math.floor(LST_mins)
+    
+    LST_secs = round((LST_mins - LST_mins_floor)*60.,4)
+    
+    LST_HHMMSS = str(LST_hr_floor)+":"+str(LST_mins_floor)+":"+str(LST_secs)
+    
+    print("Hello")
+    
+    return {"LST_HHMMSS": LST_HHMMSS, "LST_hrs": LST_hrs}
+    
+    
+def horizontal_from_equatorial(declination, RA, latitude, time_of_day, days_after_vernal_equinox):
+    #a is altitude, A is azimuth
+    
+    current_LST_hrs = get_LST(time_of_day = time_of_day, days_after_vernal_equinox = days_after_vernal_equinox)['LST_hrs']
+    current_LST_radians = (current_LST_hrs/24.)*2.*np.pi
+    print("declination: "+str(declination))
+    print("RA: "+str(RA))
+    print("current_LST_hrs: "+str(current_LST_hrs))
+    
+    h = current_LST_radians-RA #this works a good bit better if I subtract 0.5 from h
+    
+    
+    print("current_LST_radians:" +str(current_LST_radians))
+    print("RA: " +str(RA))
+    print("h: "+str(h))
+    
+    
+    a = math.asin(math.cos(h)*math.cos(declination)*math.cos(latitude)+math.sin(declination)*math.sin(latitude))
+    
+    return{"alt": a*180./np.pi}
 
