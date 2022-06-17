@@ -673,3 +673,112 @@ def horizontal_from_equatorial(declination, RA, latitude_deg, time_of_day, days_
     
     return{"alt": deg_min_sec_from_degree(a*180./np.pi), "az":deg_min_sec_from_degree(A*180./np.pi)}
 
+
+def equatorial_from_ecliptic(beta_deg, Lambda_deg):
+    '''inputs: beta-beta coordinate in degrees of an object in ecliptic coordinates, Lambda_deg-lambda coordinate in degrees of an object in ecliptic coordinates
+       outputs: RA_HMS-Right Ascension in units of hours, minutes, seconds, dec_deg_m_s-declination of object in degrees, minutes, and seconds
+       This function takes the ecliptic coordinates of an object and gives its equatorial coordinates'''
+       
+    obliquity_deg = 23.5 #obliquity of the Earth's orbit wrt ecliptic plane
+    #sin delta = cos (beta)*sin(lambda)*sin(obliquity)+sin(beta)*cos(obliquity)
+    eps = obliquity_deg*np.pi/180
+    beta = beta_deg *np.pi/180
+    lam = Lambda_deg*np.pi/180
+    
+    
+    dec = math.asin(math.cos(beta)*math.sin(lam)*math.sin(eps)+math.sin(beta)*math.cos(eps))
+    
+    alpha = math.acos(math.cos(beta)*math.sin(lam)/math.cos(dec))
+    
+    
+    dec_deg_m_s = deg_min_sec_from_degree(dec)
+    RA_HMS = HHMMSS_from_radians(alpha)
+    
+    return {"dec_deg_m_s":dec_deg_m_s, "RA_HMS":RA_HMS}
+    
+    
+def ecliptic_from_equatorial(dec_deg_m_s, RA_HMS):
+    '''inputs: RA_HMS-Right Ascension in units of hours, minutes, seconds, dec_deg_m_s-declination of object in degrees, minutes, and seconds
+       outputs: beta-beta coordinate in degrees of an object in ecliptic coordinates, Lambda_deg-lambda coordinate in degrees of an object in ecliptic coordinates
+       This function takes the equatorial coordinates of an object and gives its ecliptic coordinates'''
+       
+    obliquity_deg = 23.5 #obliquity of the Earth's orbit wrt ecliptic plane
+    
+    eps = obliquity_deg*np.pi/180
+    
+    dec = rad_from_degree_min_sec(dec_deg_m_s)
+    alpha = radians_from_HHMMSS(RA_HMS)
+    
+    
+    #sin beta = sin(dec)*cos(obliquity)-cos(delta)*sin(alpha)*sin(eps)
+    beta = math.asin(math.sin(dec)*math.cos(eps)-math.cos(dec)*math.sin(alpha)*math.sin(eps))
+    
+    #cos(delta)*cos(alpha) = cos(beta)*sin(lambda)
+    lam = math.asin(math.cos(dec)*math.cos(alpha)/math.(beta))
+    
+    
+    
+    beta_deg_m_s = deg_min_sec_from_degree(beta)
+    lam_HMS = HHMMSS_from_radians(lam)
+    
+    return {"beta_deg_m_s":beta_deg_m_s, "lam_HMS":lam_HMS}
+    
+    
+def equatorial_from_galactic(b_deg, l_deg, l_0_deg = 33, dec_0_deg = 62.6, alpha_0_deg = 282.25):
+    '''inputs: b_deg-b coordinate in degrees, l_deg-l coordinate in degrees, l_0_deg-l_0 constant in degrees (default to 33), dec_0_deg-dec_0 constant in degrees (default to 1950 value of 62.6), alpha_0_deg-alpha_0 constant in degrees (default to 1950 value of 282.25 degrees)
+       outputs: RA_HMS-right ascension value in units if hours minutes seconds, dec_deg_m_s-declination of object in degrees minutes and seconds
+       This function goes from galactic coordinates to equatorial RA-dec coordinates. It defaults to 1950 values for the RA and dec constants and for the longitude of the center of the galaxy'''
+       
+    b = b_deg*np.pi/180.
+    l = l_deg*np.pi/180.
+    l_0 = l_0_deg*np.pi/180.
+    dec_0 = dec_0_deg*np.pi/180.
+    alpha_0 = alpha_0_deg*np.pi/180.
+    
+    #sin dec = cos b * sin(l-l_0)sin dec_0 + sin b * cos dec_0
+    
+    dec = math.asin(math.cos(b)*math.sin(l-l_0)*math.sin(dec_0)+math.sin(b)*math.cos(dec_0))
+    
+    #cos b cos (l-l_0) = cos dec * cos (alpha-alpha_0)
+    
+    alpha = math.acos(math.cos(b)*math.cos(l-l_0)/math.cos(dec))+alpha_0
+    
+    dec_deg_m_s = deg_min_sec_from_degree(dec*180./np.pi)
+    RA_HMS = HHMMSS_from_radians(alpha)
+    
+    return {"dec_deg_m_s":dec_deg_m_s, "RA_HMS":RA_HMS}
+    
+
+
+def galactic_from_equatorial(dec_deg_m_s, RA_HMS, l_0_deg = 33, dec_0_deg = 62.6, alpha_0_deg = 282.25):
+    '''inputs: RA_HMS-right ascension value in units if hours minutes seconds, dec_deg_m_s-declination of object in degrees minutes and seconds, l_0_deg-l_0 constant in degrees (default to 33), dec_0_deg-dec_0 constant in degrees (default to 1950 value of 62.6), alpha_0_deg-alpha_0 constant in degrees (default to 1950 value of 282.25 degrees)
+       outputs: b_deg-b coordinate in degrees, l_deg-l coordinate in degrees
+       This function goes from galactic coordinates to equatorial RA-dec coordinates. It defaults to 1950 values for the RA and dec constants and for the longitude of the center of the galaxy'''
+       
+    dec = rad_from_degree_min_sec(dec_deg_m_s)
+    alpha = radians_from_HHMMSS(RA_HMS)
+    l_0 = l_0_deg*np.pi/180.
+    dec_0 = dec_0_deg*np.pi/180.
+    alpha_0 = alpha_0_deg*np.pi/180.
+    
+    #sin b = sin dec * cos(dec_0)-cos dec * sin(alpha-alpha_0)*sin dec_0
+    
+    b = math.asin(math.sin(dec)*math.cos(dec_0)-math.cos(dec)*math.sin(alpha-alpha_0)*math.sin(dec_0))
+    
+    #cos b * cos(l-l_0) = cos dec * cos(alpha-alpha_0)
+    
+    l = math.acos(math.cos(dec)*math.cos(alpha-alpha_0)/math.cos(b)) + l_0
+    
+    
+    
+    b_deg_m_s = deg_min_sec_from_degree(b*180./np.pi)
+    l_HMS = HHMMSS_from_radians(l)
+    
+    return {"b_deg_m_s":b_deg_m_s, "l_HMS":l_HMS}
+    
+    
+    
+    
+
+    
+    
