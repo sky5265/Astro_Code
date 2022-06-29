@@ -5,6 +5,27 @@ from Analysis_useful_funcs import *
 
 
 
+galactic_l_deg = 144.5
+galactic_b_deg = 6.5
+
+old_eq_coord = equatorial_from_galactic(b_deg = galactic_b_deg, l_deg = galactic_l_deg)
+
+
+
+
+curr_coord = precess_ecliptic_coord_fwd(num_years_to_precess = 72, lam_old_deg = galactic_l_deg, beta_old_deg = galactic_b_deg)
+curr_lam_deg = curr_coord['lam_new_deg']
+curr_beta_deg = curr_coord['beta_new_deg']
+
+eq_coord = equatorial_from_galactic(b_deg = curr_beta_deg, l_deg = curr_lam_deg)
+
+print('eq coord: '+str(eq_coord))
+
+
+
+
+
+
 lat_McDonald_rad = rad_from_degree_min_sec("30:40:18")
 lat_McDonald_deg = lat_McDonald_rad*180./(np.pi)
 

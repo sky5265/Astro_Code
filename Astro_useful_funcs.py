@@ -714,11 +714,14 @@ def ecliptic_from_equatorial(dec_deg_m_s, RA_HMS):
     beta = math.asin(math.sin(dec)*math.cos(eps)-math.cos(dec)*math.sin(alpha)*math.sin(eps))
     
     #cos(delta)*cos(alpha) = cos(beta)*sin(lambda)
-    lam = math.asin(math.cos(dec)*math.cos(alpha)/math.(beta))
+    lam = math.asin(math.cos(dec)*math.cos(alpha)/math.cos(beta))
     
     
     
     beta_deg_m_s = deg_min_sec_from_degree(beta)
+    
+    
+    
     lam_HMS = HHMMSS_from_radians(lam)
     
     return {"beta_deg_m_s":beta_deg_m_s, "lam_HMS":lam_HMS}
@@ -741,9 +744,12 @@ def equatorial_from_galactic(b_deg, l_deg, l_0_deg = 33, dec_0_deg = 62.6, alpha
     
     #cos b cos (l-l_0) = cos dec * cos (alpha-alpha_0)
     
-    alpha = math.acos(math.cos(b)*math.cos(l-l_0)/math.cos(dec))+alpha_0
+    alpha = (math.acos(math.cos(b)*math.cos(l-l_0)/math.cos(dec))+alpha_0)%(2*np.pi)
     
     dec_deg_m_s = deg_min_sec_from_degree(dec*180./np.pi)
+    
+    print("dec_deg: "+str(dec*180./np.pi))
+    
     RA_HMS = HHMMSS_from_radians(alpha)
     
     return {"dec_deg_m_s":dec_deg_m_s, "RA_HMS":RA_HMS}
@@ -775,6 +781,98 @@ def galactic_from_equatorial(dec_deg_m_s, RA_HMS, l_0_deg = 33, dec_0_deg = 62.6
     l_HMS = HHMMSS_from_radians(l)
     
     return {"b_deg_m_s":b_deg_m_s, "l_HMS":l_HMS}
+    
+    
+    
+def precess_ecliptic_coord_fwd(num_years_to_precess, lam_old_deg, beta_old_deg, del_lam_arcsec_yr = 50.29, del_beta_arcsec_yr = 0.0):
+    '''inputs: num_years_to_precess-number of years that have passed since lam_old and beta_old measurements, lam_old_deg-old ecliptic longitude that needs to be precessed forward in degrees, beta_old-old ecliptic latitude that needs to be processed forward in degrees, del_lam_arcsec_yr-precession rate of lambda in arcsec/yr, del_beta_arcsec_yr-precession rate of beta in arcsec/yr
+       outputs: beta_new-new ecliptic latitude after precessing beta_old forward in degrees, lam_new-new ecliptic longitude after precessing lam_old forward in degrees
+       This function precesses ecliptic coordinates forward in time, as a result of the Earth's spin axis precession'''
+    
+    lam_old_rad = lam_old_deg*np.pi/180.
+    beta_old_rad = beta_old_deg*np.pi/180.
+    
+    lam_old_arcsec = lam_old_rad*206265.
+    beta_old_arcsec = beta_old_rad*206265.
+    
+    lam_new_arcsec = lam_old_arcsec+del_lam_arcsec_yr*num_years_to_precess
+    beta_new_arcsec = beta_old_arcsec+del_beta_arcsec_yr*num_years_to_precess
+    
+    lam_new_deg = lam_new_arcsec*180./(np.pi*206265)
+    beta_new_deg = beta_new_arcsec*180./(np.pi*206265)
+    
+    print('lam_new_deg: '+str(lam_new_deg))
+    print('beta_new_deg: '+str(beta_new_deg))
+    
+    beta_new_deg_m_s = deg_min_sec_from_degree(beta_new_deg)
+    lam_HMS = HHMMSS_from_radians(lam_new_deg*np.pi/180.)
+    
+    return {"lam_new_deg":lam_new_deg, "beta_new_deg":beta_new_deg}
+    
+    
+def precess_ecliptic_coord_back(num_years_to_precess, lam_new_deg, beta_new_deg, del_lam_arcsec_yr = 50.29, del_beta_arcsec_yr = 0.0):
+    '''inputs: num_years_to_precess-number of years to precess back to, lam_new_deg-new ecliptic longitude that needs to be precessed backwards in degrees, beta_new-new ecliptic latitude that needs to be processed forward in degrees, del_lam_arcsec_yr-precession rate of lambda in arcsec/yr, del_beta_arcsec_yr-precession rate of beta in arcsec/yr
+       outputs: beta_old-old ecliptic latitude after precessing beta_new backwards in degrees, lam_od-old ecliptic longitude after precessing lam_new backewards in degrees
+       This function precesses ecliptic coordinates backwards in time, as a result of the Earth's spin axis precession'''
+    
+    lam_new_rad = lam_new_deg*np.pi/180.
+    beta_new_rad = beta_new_deg*np.pi/180.
+    
+    lam_new_arcsec = lam_new_rad*206265.
+    beta_new_arcsec = beta_new_rad*206265.
+    
+    lam_old_arcsec = lam_new_arcsec-del_lam_arcsec_yr*num_years_to_precess
+    beta_old_arcsec = beta_new_arcsec-del_beta_arcsec_yr*num_years_to_precess
+    
+    lam_old_deg = lam_old_arcsec*180./(np.pi*206265)
+    beta_old_deg = beta_old_arcsec*180./(np.pi*206265)
+    
+    beta_old_deg_m_s = deg_min_sec_from_degree(beta_old_deg)
+    lam_HMS = HHMMSS_from_radians(lam_old_deg*np.pi/180.)
+    
+    return {"lam_old_deg":lam_old_deg, "beta_old_deg":beta_old_deg}
+
+
+
+def precess_equatorial_coordinates_fwd(num_years_to_precess, alpha_old_deg, del_old_deg):
+        '''inputs: num_years_to_precess-number of years that have passed since alpha_old_deg and del_old_deg measurements, alpha_old_deg-old right ascension that needs to be precessed forward in degrees, del_old_deg-old declination that needs to be processed forward in degrees
+       outputs: del_new_deg-new declination after precessing del_old_deg forward in degrees, alpha_new_deg-new right ascension after precessing alpha_old_deg forward in degrees
+       This function precesses equatorial coordinates forward in time, as a result of the Earth's spin axis precession'''
+       
+   
+    alpha_old_rad = alpha_old_deg*np.pi/180.
+    del_old_rad = del_old_deg*np.pi/180.
+
+
+
+    del_alpha_sec = (3.07234+1.3365*math.sin(alpha_old_rad)*math.tan(del_old_rad))*num_years_to_precess
+
+    del_alpha_rad = 2.*np.pi*del_alpha_sec/(3600.*24.)
+    alpha_new_rad = alpha_old_rad +del_alpha_rad
+    
+    del_new_rad = del_old_rad + ((20.0468*math.cos(alpha_old_rad))*num_years_to_precess)/206265.
+    
+    alpha_new_deg = alpha_new_rad * 180./np.pi
+    dec_new_deg = dec_new_rad*180./np.pi
+    
+    
+   
+    dec_deg_m_s = deg_min_sec_from_degree(dec_new_deg)
+    
+    
+    RA_HMS = HHMMSS_from_radians(alpha_new_rad)
+    
+    return {"dec_deg_m_s":dec_deg_m_s, "RA_HMS":RA_HMS}
+       
+       
+    
+    
+    
+    
+    
+    
+    
+
     
     
     
