@@ -835,11 +835,9 @@ def precess_ecliptic_coord_back(num_years_to_precess, lam_new_deg, beta_new_deg,
 
 
 def precess_equatorial_coordinates_fwd(num_years_to_precess, alpha_old_deg, del_old_deg):
-        '''inputs: num_years_to_precess-number of years that have passed since alpha_old_deg and del_old_deg measurements, alpha_old_deg-old right ascension that needs to be precessed forward in degrees, del_old_deg-old declination that needs to be processed forward in degrees
-       outputs: del_new_deg-new declination after precessing del_old_deg forward in degrees, alpha_new_deg-new right ascension after precessing alpha_old_deg forward in degrees
-       This function precesses equatorial coordinates forward in time, as a result of the Earth's spin axis precession'''
-       
-   
+    '''inputs: num_years_to_precess-number of years that have passed since alpha_old_deg and del_old_deg measurements, alpha_old_deg-old right ascension that needs to be precessed forward in degrees, del_old_deg-old declination that needs to be processed forward in degrees
+    outputs: del_new_deg-new declination after precessing del_old_deg forward in degrees, alpha_new_deg-new right ascension after precessing alpha_old_deg forward in degrees
+    This function precesses equatorial coordinates forward in time, as a result of the Earth's spin axis precession'''
     alpha_old_rad = alpha_old_deg*np.pi/180.
     del_old_rad = del_old_deg*np.pi/180.
 
@@ -849,19 +847,19 @@ def precess_equatorial_coordinates_fwd(num_years_to_precess, alpha_old_deg, del_
 
     del_alpha_rad = 2.*np.pi*del_alpha_sec/(3600.*24.)
     alpha_new_rad = alpha_old_rad +del_alpha_rad
-    
+
     del_new_rad = del_old_rad + ((20.0468*math.cos(alpha_old_rad))*num_years_to_precess)/206265.
-    
+
     alpha_new_deg = alpha_new_rad * 180./np.pi
     dec_new_deg = dec_new_rad*180./np.pi
-    
-    
-   
+
+
+
     dec_deg_m_s = deg_min_sec_from_degree(dec_new_deg)
-    
-    
+
+
     RA_HMS = HHMMSS_from_radians(alpha_new_rad)
-    
+
     return {"dec_deg_m_s":dec_deg_m_s, "RA_HMS":RA_HMS}
        
        
