@@ -843,24 +843,17 @@ def precess_equatorial_coordinates_fwd(num_years_to_precess, alpha_old_deg, del_
 
 
 
-    del_alpha_sec = (3.07234+1.3365*math.sin(alpha_old_rad)*math.tan(del_old_rad))*num_years_to_precess
+    del_alpha_sec = (3.07234+1.3365*math.sin(alpha_old_rad)*math.tan(del_old_rad))
 
     del_alpha_rad = 2.*np.pi*del_alpha_sec/(3600.*24.)
-    alpha_new_rad = alpha_old_rad +del_alpha_rad
+    alpha_new_rad = alpha_old_rad +del_alpha_rad*num_years_to_precess
 
     del_new_rad = del_old_rad + ((20.0468*math.cos(alpha_old_rad))*num_years_to_precess)/206265.
 
     alpha_new_deg = alpha_new_rad * 180./np.pi
-    dec_new_deg = dec_new_rad*180./np.pi
+    del_new_deg = del_new_rad*180./np.pi
 
-
-
-    dec_deg_m_s = deg_min_sec_from_degree(dec_new_deg)
-
-
-    RA_HMS = HHMMSS_from_radians(alpha_new_rad)
-
-    return {"dec_deg_m_s":dec_deg_m_s, "RA_HMS":RA_HMS}
+    return {"alpha_new_deg":alpha_new_deg, "del_new_deg":del_new_deg}
        
        
     
