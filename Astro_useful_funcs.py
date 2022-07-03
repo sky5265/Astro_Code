@@ -62,6 +62,16 @@ def get_absolute_mag(app_mag, dist_parsec):
 	absolute_mag = -1.0*dist_mod - app_mag
 	
 	return {"absolute_mag": absolute_mag, "dist_mod":dist_mod}
+ 
+def get_apparent_mag(abs_mag, dist_parsec):
+    '''inputs: abs_mag-absolute magnitude of an object, dist_parsec-distance to the object in parsecs
+       outputs: app_mag-apparent magnitude of the object, dist_mod-distance modulus of the object
+       this function uses the equation m-M = 5log(d/10 parsec) to get the distance modulus and the apparent magnitude of an object, given its absolute magnitude and distance in parsec'''
+    
+    dist_mod = 5*np.log10(dist_parsec/10)
+    app_mag = abs_mag + dist_mod
+    
+    return {"apparent_mag": app_mag, "dist_mod":dist_mod}
 
 
 def fnu_from_flambda(flambda, lam, c = 3.0E18):
@@ -76,7 +86,7 @@ by seconds'''
 
 def flambda_from_fnu(fnu, lam, c = 3.0E18):
     '''inputs: fnu-f_nu that we want to get the f_lambda of, lam-wavelength at which this is happening (angstroms is default), c-optional speed of light (this is useful to specify units of length, if something other than angstroms is needed, specify speed of light in these length units)
-       outputs: flambda-f_lambda from converting nuabove, units are returned in same units of flambda as passed in, multiplied by seconds divided by length units passed in
+       outputs: flambda-f_lambda from converting nu above, units are returned in same units of flambda as passed in, multiplied by seconds divided by length units passed in
        this converts flambda into fnu for a given measurement. The default length units are angstroms and can be changed by changing the units of c, default times units are seconds, and cannot be changed. The function returns flambda in the units of fnu multiplied by seconds divided by the length units passed in'''
 
     flambda = fnu*c/lam**2
@@ -88,6 +98,12 @@ def flux_nu_jansky_from_flux_nu_cgs(flux_nu_cgs):
        outputs: flux_nu_jansky-flux in units of janskies
     '''
     return flux_nu_cgs * 10.**23
+    
+def flux_nu_cgs_from_flux_nu_jansky(flux_nu_jansky):
+    '''input: flux_nu_jansky-flux in units of janskies
+       output: flux_nu_cgs-flux in units of erg/cm^2/s/Hz
+    '''
+    return flux_nu_jansky * 10.**-23
 
 
 def get_AB_mag_from_flux_nu(flux_nu_cgs = -np.pi, flux_nu_jansky = -np.pi):
@@ -107,6 +123,17 @@ def get_AB_mag_from_flux_nu(flux_nu_cgs = -np.pi, flux_nu_jansky = -np.pi):
     AB_mag = -2.5*np.log10(flux_nu_jansky)+8.9
     
     return AB_mag
+    
+def get_flux_nu_from_AB_mag(AB_mag):
+    '''inputs: AB_mag-AB magnitude measure of magnitude
+       outputs: flux_nu_cgs-flux in units of erg/cm^2/s/Hz, flux_nu_jansky-flux in units of janskies
+       This function gets the AB magnitude of a f_nu measurement. Either flux_nu_cgs or flux_nu_jansky needs to be passed in (or both). If neither is passed in, an error is raised
+    '''
+    
+    flux_nu_jansky = 10.0**((AB_mag-8.9)/-2.5)
+    flux_nu_cgs = flux_nu_cgs_from_flux_nu_jansky(flux_nu_jansky)
+    
+    return {"flux_nu_jansky": flux_nu_jansky, "flux_nu_cgs": flux_nu_cgs}
     
 def get_AB_mag_from_flux_lam(lam, flux_lam_cgs = -np.pi):
     '''inputs: lam-wavelength of this f_lam measurement in Angstroms, flux_lam_cgs-flux in units of erg/cm^2/s/angstrom
