@@ -34,6 +34,25 @@ def gaussian(x, mu, sig, A = 1.0):
        This function passes out a gaussian with the parameters that are passed in'''
     return np.asarray(A*np.exp(-np.power(np.asarray(x) - mu, 2.) / (2 * np.power(sig, 2.))))
     
+    
+def quadratic_std(x, a, b, c):
+    '''inputs: x-list or array of independent variables over which to build a quadratic in standard form (of the form ax^2+bx+c), a-coefficient in front of x^2, b-coefficient in front of x, c-extra constant added to quadratic
+       outputs: quad-array of dependent variable defining gaussian with input parameters
+       This function passes out a quadratic constructed in standard form ax^2+bx+c with the parameters that are passed in'''
+    return np.asarray(a*np.asarray(x)**2+b*np.asarray(x)+c)
+    
+def quadratic_vertex(x, a, h, k):
+    '''inputs: x-list or array of independent variables over which to build a quadratic in vertex form (of the form a(x-h)^2+k), a-coefficient in front of x^2, h-x coordinate of vertex, k-y coordinate of vertex
+       outputs: quad-array of dependent variable defining gaussian with input parameters
+       This function passes out a quadratic constructed in standard form a*(x-h)^2+k with the parameters that are passed in'''
+    return np.asarray(a*(np.asarray(x)-h)**2+k)
+    
+def quadratic_zeros(x, a, x1, x2):
+    '''inputs: x-list or array of independent variables over which to build a quadratic in zero point form (a*(x-x1)(x-x2)), a-coefficient in front of x^2, x1-x coordinate first zero, x2-x coordinate of second zero
+       outputs: quad-array of dependent variable defining gaussian with input parameters
+       This function passes out a quadratic constructed in standard form a*(x-x1)(x-x2) with the parameters that are passed in'''
+    return np.asarray(a*(np.asarray(x)-x1)*(np.asarray(x)-x2))
+    
 def double_gaussian(x, mu1, sig1, mu2, sig2, A1 = 1.0, A2 = 1.0):
     '''inputs: x-list or array of independent variables over which to build a gaussian, mu1-center of gaussian1, sig1-standard deviation of gaussian1, A1-vertical scaling constant of gaussian1 (default to 1.0), mu2-center of gaussian2, sig2-standard deviation of gaussian2, A2-vertical scaling constant of gaussian2 (default to 1.0),
        outputs: gaussian-array of dependent variable defining gaussian with input parameters
