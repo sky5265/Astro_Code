@@ -1,6 +1,6 @@
 import numpy as np
 import math
-
+import random
 
 G_SI = 6.674E-11 #Universal gravitational constant G in SI units N*m^2/kg^2
 G_cgs = 6.674E-8 #Universal gravitational constant G in cgs units dyne*cm^2/g^2
@@ -33,6 +33,45 @@ def gaussian(x, mu, sig, A = 1.0):
        outputs: gaussian-array of dependent variable defining gaussian with input parameters
        This function passes out a gaussian with the parameters that are passed in'''
     return np.asarray(A*np.exp(-np.power(np.asarray(x) - mu, 2.) / (2 * np.power(sig, 2.))))
+    
+def double_gaussian(x, mu1, sig1, mu2, sig2, A1 = 1.0, A2 = 1.0):
+    '''inputs: x-list or array of independent variables over which to build a gaussian, mu1-center of gaussian1, sig1-standard deviation of gaussian1, A1-vertical scaling constant of gaussian1 (default to 1.0), mu2-center of gaussian2, sig2-standard deviation of gaussian2, A2-vertical scaling constant of gaussian2 (default to 1.0),
+       outputs: gaussian-array of dependent variable defining gaussian with input parameters
+       This function passes out a gaussian with the parameters that are passed in'''
+    return np.asarray(A1*np.exp(-np.power(np.asarray(x) - mu1, 2.) / (2 * np.power(sig1, 2.)))) + np.asarray(A2*np.exp(-np.power(np.asarray(x) - mu2, 2.) / (2 * np.power(sig2, 2.))))
+    
+def noisy_gaussian(x, mu, sig, noise_strength, A = 1.0):
+    '''inputs: x-list or array of independent variables over which to build a gaussian, mu-center of gaussian, sig-standard deviation of gaussian, A-vertical scaling constant of gaussian (default to 1.0), noise_strength-strength of noise parameter in the gaussian that is created
+       outputs: gaussian-array of dependent variable defining gaussian with input parameters
+       This function passes out a randomized gaussian with the parameters that are passed in, with an extra noise term controlled by noise_strength'''
+    
+    '''
+    gg = noise_strength*np.random.random_sample(size = len(x))
+    hh = (1+gg)*np.asarray(A*np.exp(-np.power(np.asarray(x) - mu, 2.) / (2 * np.power(sig, 2.))))
+    return gg*hh'''
+    
+    g = np.asarray(A*np.exp(-np.power(np.asarray(x) - mu, 2.) / (2 * np.power(sig, 2.))))
+    tor = []
+    for i in g:
+        tor.append(i*(1+random.random()*noise_strength))
+    return np.asarray(tor)
+    
+def noisy_double_gaussian(x, mu1, sig1, mu2, sig2, noise_strength, A1 = 1.0, A2 = 1.0):
+    '''inputs: x-list or array of independent variables over which to build a gaussian, mu1-center of gaussian1, sig1-standard deviation of gaussian1, A1-vertical scaling constant of gaussian1 (default to 1.0), mu2-center of gaussian2, sig2-standard deviation of gaussian2, A2-vertical scaling constant of gaussian2 (default to 1.0), noise_strength-strength of noise parameter in the gaussian that is created
+       outputs: gaussian-array of dependent variable defining gaussian with input parameters
+       This function passes out a randomized gaussian with the parameters that are passed in, with an extra noise term controlled by noise_strength'''
+    
+    '''
+    gg = noise_strength*np.random.random_sample(size = len(x))
+    hh = (1+gg)*np.asarray(A*np.exp(-np.power(np.asarray(x) - mu, 2.) / (2 * np.power(sig, 2.))))
+    return gg*hh'''
+    
+    g = np.asarray(A1*np.exp(-np.power(np.asarray(x) - mu1, 2.) / (2 * np.power(sig1, 2.)))) + np.asarray(A2*np.exp(-np.power(np.asarray(x) - mu2, 2.) / (2 * np.power(sig2, 2.))))
+    tor = []
+    for i in g:
+        tor.append(i*(1+random.random()*noise_strength))
+    return np.asarray(tor)
+    
     
 def correct_cosmological_redshift(wavelengths, fluxes, z):
     '''inputs: wavelengths-list of wavelengths for the spectrum that is passed in, fluxes-corresponding list of fluxes for the spectrum, z-cosmological redshift of the obeject emitting this spectrum
