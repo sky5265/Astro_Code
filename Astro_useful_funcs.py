@@ -34,7 +34,6 @@ def gaussian(x, mu, sig, A = 1.0):
        This function passes out a gaussian with the parameters that are passed in'''
     return np.asarray(A*np.exp(-np.power(np.asarray(x) - mu, 2.) / (2 * np.power(sig, 2.))))
     
-    
 def quadratic_std(x, a, b, c):
     '''inputs: x-list or array of independent variables over which to build a quadratic in standard form (of the form ax^2+bx+c), a-coefficient in front of x^2, b-coefficient in front of x, c-extra constant added to quadratic
        outputs: quad-array of dependent variable defining gaussian with input parameters

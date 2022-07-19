@@ -1,6 +1,19 @@
 import numpy as np
 import math
 import matplotlib.pyplot as plt
+import os
+
+def isfloat(element):
+    return is_float(element)
+
+def is_float(element):
+    '''checks if an element can be turned into a float'''
+    try:
+        float(element)
+        return True
+    except ValueError:
+        return False
+
 
 def find_nearest(wv,value):
     '''inputs: wv-list of data to look in, value-the value we are looking for in wv
@@ -8,6 +21,15 @@ def find_nearest(wv,value):
        this finds the index of the closest element to value in list wv'''
     idx= (np.abs(np.asarray(wv) - value)).argmin()
     return idx
+
+def mkdir(dir_loc):
+    '''inputs: dir_loc-location of directory to create
+       outputs: none
+       This function creates the directory at dir_loc if it doesn't exist. If it does exist, nothing happens'''
+    if not os.path.isdir(dir_loc):
+        os.mkdir(dir_loc)
+    
+    
 
 def pretty_plot(x, y, xlabel = r'', ylabel = '', title = '', label = '', xlim = [], ylim = [], save_loc='', display_or_nah = False):
     '''inputs: x-indpendent variable of plot to create, y-dependent variable of plot to create, xlabel-string of label on x-axis, ylabel-string of label on y-axis, title-string of title for figure, xlim-list of limits of plot for x-axis, ylim-list of limits of plot for y-axis, labels-string of label of plot, save_loc-string location in file where to store the plot (default to ''; if '' is set, the figure won't be saved), display_or_nah-boolean variable to control whether the figure should be displayed (default to False)
@@ -48,3 +70,5 @@ def pretty_plot(x, y, xlabel = r'', ylabel = '', title = '', label = '', xlim = 
         
     if display_or_nah:
         plt.show()
+        
+    plt.close()
