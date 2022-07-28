@@ -5,12 +5,14 @@ from Math_useful_funcs import *
 
 
 
-#f(x, y, z) = [x^2, y^2, z^2]
-func1 = "x^2+y^2+z^2"
-func2 = ["A_r", "A_theta", "A_phi"]
-B = ["0", "0", "B_phi"]
 
-print(curl(input_func = B, coord = 'spherical'))
+d_m = length_conversions(d_Mpc = 9.3)["m"]
+print(z_from_dist(d_m))
+
+
+#(f*g)(t) = int_{-\infty}^{\infty} f(\tau)g(t-\tau)d\tau
+
+
 
 
 

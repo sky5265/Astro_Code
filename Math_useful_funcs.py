@@ -23,7 +23,7 @@ def get_vol_term(h, idxs):
             return "0"
         if not is_float(i) or float(i) != 1.0:
             vol_term += i
-            if j +1 < len(idxs):
+            if j +2 < len(h):
                 vol_term += "*"
     return vol_term
 

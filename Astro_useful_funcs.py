@@ -1,9 +1,11 @@
 import numpy as np
 import math
 import random
+import warnings
 
 G_SI = 6.674E-11 #Universal gravitational constant G in SI units N*m^2/kg^2
 G_cgs = 6.674E-8 #Universal gravitational constant G in cgs units dyne*cm^2/g^2
+c_ms = 3.0E8 #speed of light in meters/sec
 
 H_0_km_s_Mpc = 67.37 #hubble constant in units of km/s/Mpc
 H_0_hz = 2.1833E-18 #hubble constant in units of 1/sec, this is useful for SI unit calculations
@@ -28,11 +30,17 @@ def find_nearest(wv,value):
     idx= (np.abs(np.asarray(wv) - value)).argmin()
     return idx
     
-def gaussian(x, mu, sig, A = 1.0):
+def gaussian(x, mu, sig, A = -np.inf):
     '''inputs: x-list or array of independent variables over which to build a gaussian, mu-center of gaussian, sig-standard deviation of gaussian, A-vertical scaling constant of gaussian (default to 1.0)
        outputs: gaussian-array of dependent variable defining gaussian with input parameters
        This function passes out a gaussian with the parameters that are passed in'''
-    return np.asarray(A*np.exp(-np.power(np.asarray(x) - mu, 2.) / (2 * np.power(sig, 2.))))
+    
+    
+    if A == -np.inf:
+        GG = (1/(sig*np.sqrt(2*np.pi))) * np.asarray(np.exp(-np.power(np.asarray(x) - mu, 2.) / (2 * np.power(sig, 2.))))
+    else:
+        GG = np.asarray(A*np.exp(-np.power(np.asarray(x) - mu, 2.) / (2 * np.power(sig, 2.))))
+    return GG
     
 def quadratic_std(x, a, b, c):
     '''inputs: x-list or array of independent variables over which to build a quadratic in standard form (of the form ax^2+bx+c), a-coefficient in front of x^2, b-coefficient in front of x, c-extra constant added to quadratic
@@ -89,6 +97,105 @@ def noisy_double_gaussian(x, mu1, sig1, mu2, sig2, noise_strength, A1 = 1.0, A2 
     for i in g:
         tor.append(i*(1+random.random()*noise_strength))
     return np.asarray(tor)
+    
+    
+def convolve_analytical(seed_func, kernel_func, x_half_width, x_prec):
+    '''inputs: seed_func-a python function that gives the mathematical seed function that we want to convolve, kernel_func-a python function that gives the mathematical kernel function that we want to convolve our seed function with, x_half_width-the half width over the independent variable that we want to convolve over, x_prec-precision of the integral
+       outputs: Xs-an array of the independent variable that is twice as long as the region over which the kernel function and seed function are defined. This is the region over which the convolved function will be defined, xs-array of the independent variable over which the kernel function and seed function are defined, convolved-array of final convolved function
+       This function takes the convolution of seed_func and kernel func. Note that seed_fun and kernel func must be python functions that take a single variable as a parameter.'''
+    
+    
+    Xs = np.asarray(np.arange(-2.*x_half_width, 2.*x_half_width, x_prec))
+    xs = np.asarray(np.arange(-1.*x_half_width, x_half_width,  x_prec))
+    
+    convolved = []
+    for i in range(len(Xs)):
+        X = Xs[i]
+        local_sum = 0.0
+        
+        for j in range(len(xs)):
+            x = xs[j]
+            if j < len(xs)-1:
+                width = xs[j+1]-xs[j]
+            else:
+                width = xs[-1]-xs[-2]
+                
+            local_sum += kernel_func(x)*seed_func(X-x)*width
+        convolved.append(local_sum)
+    
+    return {"Xs": Xs, "xs": xs, "convolved": np.asarray(convolved)}
+    
+    
+    
+    
+def convolve_empirical(x, y, kernel_func, width = -np.inf, x_prec = -np.inf):
+
+    '''inputs: x-an array of x values (independent variables) over which the seed function is empirically defined, y-an array of y values (dependent values) that hold the actual seed function values, kernel_func-a python function that gives the mathematical kernel function that we want to convolve our seed function with, x_prec-precision of the integral (defaults to -infinity, which the function interpret as estimating the accuracy of the precision from the precision of the x array)
+       outputs: Xs-an array of the independent variable that is twice as long as the region over which the kernel function and seed function are defined. This is the region over which the convolved function will be defined, xs-array of the independent variable over which the kernel function and seed function are defined, kernel_arr-array of kernel values defined over xs, convolved-array of final convolved function, norm_convolved-array of final convolved function divided by max value of convolved,
+       This function takes the convolution of seed_func and kernel func. Note that seed_fun is described by an array for x and y and kernel func must be a python function that take a single variable as a parameter.'''
+    
+    midpoint = np.median(x)
+    x-=np.median(x)
+    
+    if width == -np.inf:
+        width = 2.
+    
+    xs = x
+    ys = y
+    
+    
+    med = np.median(x)
+    lw = med-np.min(x)
+    uw = np.max(x)-med
+    
+    if x_prec == -np.inf:
+        x_prec = (np.max(x)-np.min(x))/len(x)
+        
+    l = list(np.arange(np.min(x)-(width-1)*lw, np.min(x), x_prec))
+    Xs = l
+    Ys = [0. for i in l]
+    
+    for i in range(len(x)):
+        Xs.append(x[i])
+        Ys.append(y[i])
+        
+    u = list(np.arange(np.max(x), np.max(x)+(width-1)*uw, x_prec))
+    for i in range(len(u)):
+    
+        Xs.append(u[i])
+        Ys.append(0.)
+    
+    Xs = np.asarray(Xs)
+    Ys = np.asarray(Ys)
+    
+    
+    convolved = []
+    kernel_arr = []
+    for i in range(len(Xs)):
+        X = Xs[i]
+        local_sum = 0.0
+        add_to_kernel = False
+        if len(kernel_arr) == 0:
+            add_to_kernel = True
+        for j in range(len(xs)):
+
+            x = xs[j]
+            if j < len(xs)-1:
+                width = xs[j+1]-xs[j]
+            else:
+                width = xs[-1]-xs[-2]
+                
+            idx = find_nearest(X-x, Xs)
+            #print("")
+            if add_to_kernel:
+                kernel_arr.append(kernel_func(x))
+            
+            local_sum += kernel_func(x)*Ys[idx]*width
+        convolved.append(local_sum)
+    
+    Xs += midpoint
+    xs += midpoint
+    return {"Xs": Xs, "xs": xs, "kernel_arr": np.asarray(kernel_arr), "convolved": np.asarray(convolved), "norm_convolved": np.asarray(convolved)/np.max(convolved)}
     
     
 def correct_cosmological_redshift(wavelengths, fluxes, z):
@@ -479,6 +586,20 @@ def physical_dist_from_comoving_dist(comoving_dist, scale_factor):
     
     return comoving_dist*scale_factor
     
+def z_from_vel(vel_ms):
+    '''inputs: vel_ms-velocity of object in meters per second
+       outputs: z-redshift corresponding to this velocity
+       This function gives back redshift as a function of velocity of an object. We have the formula 1+z = (1+v/c)*gamma. I just want to point out: gamma is independent of the direction of the velocity. So, gamma is always 1/sqrt(1-beta^2), but the classical aspect of the doppler shift has a cos \theta in it because we need to see what velocity the object is moving away from us. So, the formula is 1+z = (1+v*cos(theta)/c)/(sqrt(1-beta^2)). Theta is zero when the object is moving directly away from us, which is the assumption this function makes. More on this at https://en.wikipedia.org/wiki/Redshift#Extragalactic_observations'''
+       
+    z = np.sqrt((1+vel_ms/3.0E8)/(1-vel_ms/3.0E8))-1.0
+    
+    return z
+    
+       
+       
+       
+    
+    
 def z_from_scale_factor(a, a_0=1.0):
     '''inputs: a-scale factor of universe at some time t, a_0-(optional) scale factor of universe at time 0-defaults to t = now and a_0=1.0
        outputs: z-redshift measurement of the object at time t, when seen from time 0
@@ -492,6 +613,66 @@ def scale_factor_from_z(z, a_0 = 1.0):
        This function turns a redshift into a scale factor using the equation (1+z) = a_0/a'''
 
     return a_0/(1+z)
+    
+def length_conversions(d_cm = None, d_m = None, d_Km = None, d_AU = None, d_ly = None, d_pc = None, d_Kpc = None, d_Mpc = None, d_Gpc = None):
+    '''inputs: d_SI-distance in SI units, d_MPC-distance in megaparsec
+       outputs: dist_dic-dictionary of distance conversions of d_SI into a bunch of distance units
+       This function is a one-stop place to get all distance conversions. We go from meters into cm, m, km, AU, ly, pc, kpc, MPC, GPC. We can also take in whatever unit of distance and give it back in all of these units'''
+    
+    conv_dic = {"cm": 1.0E-2, "m":1.0, "Km": 1000., "AU": 1.496E11, "ly": 9.461E15, "pc": 3.086E16, "Kpc": 3.086E19, "Mpc": 3.086E22, "Gpc": 3.086E25}
+    
+    inputs = {"cm": d_cm, "m":d_m, "Km": d_Km, "AU": d_AU, "ly": d_ly, "pc": d_pc, "Kpc": d_Kpc, "Mpc": d_Mpc, "Gpc": d_Gpc}
+    
+    outputs = {"cm": None, "m":None, "Km": None, "AU": None, "ly": None, "pc": None, "Kpc": None, "Mpc": None, "Gpc": None}
+
+    input_unit = None
+    input_val = None
+    for unit in inputs.keys():
+        if inputs[unit] is not None:
+            input_unit = unit
+            input_val = inputs[unit]
+            
+    #get into meters first, then into <unit> units
+    in_meters = input_val*conv_dic[input_unit]
+    for unit in outputs.keys():
+        outputs[unit] = in_meters/conv_dic[unit]
+        
+    return outputs
+    
+
+    
+def dist_from_redshift(z, hubble_const = H_0_SI):
+    '''inputs: z-redshift of an object, hubble_const-hubble constant to be used (defaults to value set above)
+       outputs: dist-distance to the object, given its redshift.
+       This uses the formula D_p = \frac{2c}{H0}[1-(1+z)^-0.5] to get distance, given redshift to an object. Note that this formula only works for small redshifts'''
+       
+    if z > 1:
+        raise Exception("Redshift passed in: "+str(z)+" is too large to use approximate formula for physical distance.")
+    elif z > 0.1:
+        warnings.warn("Warning: Redshift passed into distance formula might be too large.")
+        
+    dist_m = (2*c_ms/hubble_const)*(1-(1+z)**-0.5)
+    d = length_conversions(dist_m)
+    
+    return d
+    
+    
+def z_from_dist(dist_m, hubble_const = H_0_SI):
+    '''inputs: dist_m-distance to the object, given its redshift, hubble_const-hubble constant to be used (defaults to value set above)
+       outputs: z-redshift of an object
+       This uses the formula D_p = \frac{2c}{H0}[1-(1+z)^-0.5] to get redshift, given distance to an object. Note that this formula only works for small redshifts'''
+       
+       
+    
+    z = (1-dist_m*hubble_const/(2*c_ms))**-2.0-1.0
+    
+    if z > 1:
+        raise Exception("Redshift passed in: "+str(z)+" is too large to use approximate formula for physical distance.")
+    elif z > 0.1:
+        warnings.warn("Warning: Redshift passed into distance formula might be too large.")
+        
+    
+    return z
     
 #lookback time as a function of z, as a function of a
 
