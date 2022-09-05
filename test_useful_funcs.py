@@ -4,11 +4,14 @@ from Astro_useful_funcs import *
 from Math_useful_funcs import *
 
 
+print(read_file('dataset.txt'))
 
 
+
+'''
 d_m = length_conversions(d_Mpc = 9.3)["m"]
 print(z_from_dist(d_m))
-
+'''
 
 #(f*g)(t) = int_{-\infty}^{\infty} f(\tau)g(t-\tau)d\tau
 

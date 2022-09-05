@@ -7,8 +7,8 @@ G_SI = 6.674E-11 #Universal gravitational constant G in SI units N*m^2/kg^2
 G_cgs = 6.674E-8 #Universal gravitational constant G in cgs units dyne*cm^2/g^2
 c_ms = 3.0E8 #speed of light in meters/sec
 
-H_0_km_s_Mpc = 67.37 #hubble constant in units of km/s/Mpc
-H_0_hz = 2.1833E-18 #hubble constant in units of 1/sec, this is useful for SI unit calculations
+H_0_km_s_Mpc = 70.0 #hubble constant in units of km/s/Mpc
+H_0_hz = 2.269E-18 #hubble constant in units of 1/sec, this is useful for SI unit calculations
 H_0 = H_0_km_s_Mpc
 H_0_SI = H_0_hz
 
@@ -223,7 +223,7 @@ def get_absolute_mag(app_mag, dist_parsec):
 	   this function uses the equation m-M = 5log(d/10 parsec) to get the distance modulus and the absolute magnitude of an object, given its apparent magnitude and distance'''
 	
 	dist_mod = 5*np.log10(dist_parsec/10)
-	absolute_mag = -1.0*dist_mod - app_mag
+	absolute_mag = -1.0*dist_mod + app_mag
 	
 	return {"absolute_mag": absolute_mag, "dist_mod":dist_mod}
  
@@ -652,7 +652,7 @@ def dist_from_redshift(z, hubble_const = H_0_SI):
         warnings.warn("Warning: Redshift passed into distance formula might be too large.")
         
     dist_m = (2*c_ms/hubble_const)*(1-(1+z)**-0.5)
-    d = length_conversions(dist_m)
+    d = length_conversions(d_m = dist_m)
     
     return d
     

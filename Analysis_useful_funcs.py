@@ -6,6 +6,52 @@ import os
 def isfloat(element):
     return is_float(element)
 
+
+def write_to_file(file_loc, data_out, headers=None):
+    '''inputs: file_loc-location to which to write to, data_to_write-this is a 2d array that will be written to a file
+       outputs: none
+       This function writes a 2d array to a file'''
+       
+    out = open(file_loc ,'w')
+    
+    for i  in range(len(data_out)):
+        if isinstance(data_out[i], float) or type(data_out[i]) is str:
+            out.write(str(data_out[i])+" ")
+        else:
+            for j in range(len(data_out[i])):
+                out.write(str(data_out[i][j])+" ")
+            
+        out.write("\n")
+    out.close()
+            
+            
+
+def load_file(file_loc, header_marker=None):
+    '''same as read_file'''
+    
+    return read_file(file_loc, header_marker = header_marker)
+
+def read_file(file_loc, header_marker=None):
+    '''inputs: file_loc-string of file location to read in
+       outputs: data-2d array of data read in and passed out
+       This function reads in a dataset in a file located at file_loc and returns a 2d array of this'''
+       
+    with open(file_loc) as f:
+        lines = [line.rstrip().split() for line in f]
+        
+    
+    dict = {}
+    
+    for i in range(len(lines)):
+        for j in range(len(lines[i])):
+            if j not in dict.keys():
+                dict[j] = []
+            dict[j].append(lines[i][j])
+        
+    return {"lines": lines, "dict": dict}
+        
+    
+
 def is_float(element):
     '''checks if an element can be turned into a float'''
     try:
