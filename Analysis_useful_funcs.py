@@ -3,6 +3,18 @@ import math
 import matplotlib.pyplot as plt
 import os
 
+
+def isint(element):
+    return is_int(element)
+    
+def is_int(element):
+    '''checks if an element can be turned into an int'''
+    try:
+        int(element)
+        return True
+    except ValueError:
+        return False
+
 def isfloat(element):
     return is_float(element)
 
@@ -77,7 +89,7 @@ def mkdir(dir_loc):
     
     
 
-def pretty_plot(x, y, xlabel = r'', ylabel = '', title = '', label = '', xlim = [], ylim = [], save_loc='', display_or_nah = False):
+def pretty_plot(x, y, xlabel = r'', ylabel = '', title = '', label = '', xlim = [], ylim = [], xscale='', yscale='', save_loc='', display_or_nah = False):
     '''inputs: x-indpendent variable of plot to create, y-dependent variable of plot to create, xlabel-string of label on x-axis, ylabel-string of label on y-axis, title-string of title for figure, xlim-list of limits of plot for x-axis, ylim-list of limits of plot for y-axis, labels-string of label of plot, save_loc-string location in file where to store the plot (default to ''; if '' is set, the figure won't be saved), display_or_nah-boolean variable to control whether the figure should be displayed (default to False)
         outputs: none
         This function plots x and y using plt.plot--I only have this function because I have a specific way I like plotting, and hate remembering all the details, so this function plots things for me'''
@@ -101,7 +113,7 @@ def pretty_plot(x, y, xlabel = r'', ylabel = '', title = '', label = '', xlim = 
         plt.ylim(ylim)
     
     if len(ylabel) > 0:
-        plt.ylabel(ylim, fontsize=2.5*H)
+        plt.ylabel(ylabel, fontsize=2.5*H)
         
     plt.yticks(fontsize=1.5*W)
     
@@ -110,11 +122,19 @@ def pretty_plot(x, y, xlabel = r'', ylabel = '', title = '', label = '', xlim = 
         
     if len(label):
         plt.legend(fontsize = 1.5*H)
+    
+    if xscale == 'log':
+        plt.xscale('log')
+        
+    if yscale == 'log':
+        plt.yscale('log')
         
     if len(save_loc) > 0:
         plt.savefig(save_loc)
         
     if display_or_nah:
         plt.show()
+        
+    return plt
         
     plt.close()
