@@ -43,22 +43,47 @@ def load_file(file_loc, header_marker=None):
     
     return read_file(file_loc, header_marker = header_marker)
 
-def read_file(file_loc, header_marker=None):
+def read_file(file_loc, comments ='#', separators = [], header_row = None, header_marker=None):
     '''inputs: file_loc-string of file location to read in
        outputs: data-2d array of data read in and passed out
        This function reads in a dataset in a file located at file_loc and returns a 2d array of this'''
-       
+    
+    headers = []
+    it = 0
     with open(file_loc) as f:
-        lines = [line.rstrip().split() for line in f]
+        lines = []
+        for line in f:
+            if len(separators) > 0:
+                for separator in separators:
+                    line = line.replace(separator, ' ')
+            if len(line.split()) > 0 and line.split()[0] != comments:
+                if header_row is not None and it == 0:
+                    headers = line.rstrip()
+                    
+                else:
+                    lines.append(line.rstrip().split())
+                it += 1
         
+    if len(separators) > 0:
+        for separator in separators:
+            headers = headers.replace(separator, ' ')
+    headers = headers.split()
     
     dict = {}
+    if len(headers) > 0:
+        for header in headers:
+            dict[header] = []
     
     for i in range(len(lines)):
         for j in range(len(lines[i])):
-            if j not in dict.keys():
-                dict[j] = []
-            dict[j].append(lines[i][j])
+            if len(headers) < j+1:
+                if j not in dict.keys():
+                    dict[j] = []
+                dict[j].append(lines[i][j])
+            else:
+                if headers[j] not in dict.keys():
+                    dict[headers[j]] == []
+                dict[headers[j]].append(lines[i][j])
         
     return {"lines": lines, "dict": dict}
         
