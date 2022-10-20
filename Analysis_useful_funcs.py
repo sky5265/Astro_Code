@@ -19,21 +19,28 @@ def isfloat(element):
     return is_float(element)
 
 
-def write_to_file(file_loc, data_out, headers=None):
+def write_to_file(file_loc, data_out, separator = ' ', headers=None, append=False):
     '''inputs: file_loc-location to which to write to, data_to_write-this is a 2d array that will be written to a file
        outputs: none
        This function writes a 2d array to a file'''
        
-    out = open(file_loc ,'w')
+    if not append:
+        out = open(file_loc ,'w')
+    else:
+        out = open(file_loc ,'a+')
     
-    for i  in range(len(data_out)):
-        if isinstance(data_out[i], float) or type(data_out[i]) is str:
-            out.write(str(data_out[i])+" ")
-        else:
-            for j in range(len(data_out[i])):
-                out.write(str(data_out[i][j])+" ")
-            
-        out.write("\n")
+    if type(data_out) is str:
+        out.write(data_out+"\n")
+        
+    else:
+        for i  in range(len(data_out)):
+            if isinstance(data_out[i], float) or type(data_out[i]) is str:
+                out.write(str(data_out[i])+separator)
+            else:
+                for j in range(len(data_out[i])):
+                    out.write(str(data_out[i][j])+separator)
+                
+            out.write("\n")
     out.close()
             
             
@@ -43,31 +50,38 @@ def load_file(file_loc, header_marker=None):
     
     return read_file(file_loc, header_marker = header_marker)
 
-def read_file(file_loc, comments ='#', separators = [], header_row = None, header_marker=None):
+def read_file(file_loc, comments ='#', separators = [], skip_lines = [-1], header_row = None, header_marker=None):
     '''inputs: file_loc-string of file location to read in
        outputs: data-2d array of data read in and passed out
        This function reads in a dataset in a file located at file_loc and returns a 2d array of this'''
-    
-    headers = []
+    headers = ''
+    row_num = 0
     it = 0
+    skipped_lines = []
     with open(file_loc) as f:
         lines = []
         for line in f:
-            if len(separators) > 0:
-                for separator in separators:
-                    line = line.replace(separator, ' ')
-            if len(line.split()) > 0 and line.split()[0] != comments:
-                if header_row is not None and it == 0:
-                    headers = line.rstrip()
-                    
-                else:
-                    lines.append(line.rstrip().split())
-                it += 1
+            if row_num not in skip_lines:
+                if len(separators) > 0:
+                    for separator in separators:
+                        line = line.replace(separator, ' ')
+                if len(line.split()) > 0 and line.split()[0] != comments:
+                    if header_row is not None and it == 0:
+                        headers = line.rstrip()
+                        
+                    else:
+                        lines.append(line.rstrip().split())
+                    it += 1
+            elif row_num in skip_lines:
+                skipped_lines.append(line)
+            row_num += 1
         
     if len(separators) > 0:
         for separator in separators:
             headers = headers.replace(separator, ' ')
-    headers = headers.split()
+    
+    if len(headers) > 0:
+        headers = headers.split()
     
     dict = {}
     if len(headers) > 0:
@@ -85,7 +99,7 @@ def read_file(file_loc, comments ='#', separators = [], header_row = None, heade
                     dict[headers[j]] == []
                 dict[headers[j]].append(lines[i][j])
         
-    return {"lines": lines, "dict": dict}
+    return {"lines": lines, "dict": dict, "skipped_lines":skipped_lines}
         
     
 
@@ -120,7 +134,7 @@ def pretty_plot(x, y, xlabel = r'', ylabel = '', title = '', label = '', xlim = 
         This function plots x and y using plt.plot--I only have this function because I have a specific way I like plotting, and hate remembering all the details, so this function plots things for me'''
     W = 15
     H = 10
-    plt.figure(figsize=(W, H))
+
     
     if len(label) > 0:
         plt.plot(x, y, linewidth=H/3, label=label)
@@ -161,5 +175,3 @@ def pretty_plot(x, y, xlabel = r'', ylabel = '', title = '', label = '', xlim = 
         plt.show()
         
     return plt
-        
-    plt.close()

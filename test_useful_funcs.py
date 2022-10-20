@@ -4,9 +4,13 @@ from Astro_useful_funcs import *
 from Math_useful_funcs import *
 
 
-print(read_file('dataset.txt'))
+obs_mag = 16.3
+z = 0.012
 
+dist_parsec = dist_from_redshift(z = z)['pc']
 
+abs_mag = get_absolute_mag(app_mag=obs_mag, dist_parsec=dist_parsec)
+print("absmag: "+str(abs_mag))
 
 '''
 d_m = length_conversions(d_Mpc = 9.3)["m"]
