@@ -7,7 +7,7 @@ G_SI = 6.674E-11 #Universal gravitational constant G in SI units N*m^2/kg^2
 G_cgs = 6.674E-8 #Universal gravitational constant G in cgs units dyne*cm^2/g^2
 c_ms = 3.0E8 #speed of light in meters/sec
 
-H_0_km_s_Mpc = 70.0 #hubble constant in units of km/s/Mpc
+H_0_km_s_Mpc = 72.0 #hubble constant in units of km/s/Mpc
 H_0_hz = 2.269E-18 #hubble constant in units of 1/sec, this is useful for SI unit calculations
 H_0 = H_0_km_s_Mpc
 H_0_SI = H_0_hz
@@ -21,6 +21,74 @@ Omega_Lambda = 0.6847 #dark energy density of universe
 Omega_k = 0.001
 t_0_Gyr = 13.797 #age of universe in Gyr
 t_0 = t_0_Gyr
+
+def get_plotting_marker(band, instrument = None, telescope = None):
+    '''inputs: band-the name of the band that we want to assign a color and marker to, instrument-the instrument on which the observation was done (defaults to none-instrument does not need to be provided), telescope-the telescope on which the observation was done (defaults to none-instrument does not need to be provided)
+       outputs: color-color of marker to be plotted, marker-marker in matplotlib that needs to be plotted
+       This function takes a band in which a photmetric observation was done and returns the color and marker in which we want to plot this observation on a light curve. This will allow for standardization for LC plotting over all of my figures. Returns as a tuple: (color, marker)'''
+       
+    
+    key = band
+    
+    colors_to_attempt = {'g':'limegreen', 'gp':'limegreen', 'up':'darkslategrey', 'ip':'indianred', 'rp':'crimson', 'G': 'green', 'r':'crimson', 'R': 'red', 'b':'royalblue', 'B':'blue', 'cyan':'cyan', 'orange':'orange', 'u':'darkslategrey', 'U':'darkslategrey', 'UVM2':'violet', 'UVW2':'slateblue', 'UVW1': 'midnightblue', 'i':'indianred', 'z':'brown', 'v':'orangered', 'V':'palevioletred', 'generic':'black', 'w':'navy'}
+    colors_assigned = {}
+    used_up_colors = []
+
+    detector_dictionary = {"UVM2":{"telescope":"Swift", "instrument":"UVOT"}, "UVW1":{"telescope":"Swift", "instrument":"UVOT"}, "UVW2":{"telescope":"Swift", "instrument":"UVOT"}}
+    
+    instrument = None
+    telescope = None
+
+    for detector_key in detector_dictionary.keys():
+        for color_key in colors_to_attempt.keys():
+            if color_key+"-" in detector_key or color_key == detector_key:
+                instrument = detector_dictionary[detector_key]["instrument"]
+                telescope = detector_dictionary[detector_key]["telescope"]
+    
+    telescope_groups = []
+    symbols_to_attempt = {'Swift': '^', 'ZTF': 'o', 'P48':'o', 'ATLAS': 'D', 'Siding_Spring_1m':'s', 'Thacher':'P', 'generic':'.'}
+    symbols_assigned = {}
+    used_up_symbols = []
+    telescope_names = {'Siding_Spring_1m': 'Las Cumbres', 'P48': 'ZTF'}
+    
+    curr_col = ''
+    curr_symbol = ''
+    for color_key in colors_to_attempt.keys():
+        if color_key+"-" in key or color_key == key:
+            colors_assigned[key] = colors_to_attempt[color_key]
+            used_up_colors.append(colors_to_attempt[color_key])
+            curr_col = color_key
+            
+    if key not in colors_assigned.keys():
+        print("Key not in colors assgined: "+str(key))
+        colors_assigned[key] = colors_to_attempt['generic']
+        
+    
+            
+    for symbol_key in symbols_to_attempt.keys():
+        if symbol_key in key or symbol_key == key:
+            symbols_assigned[key] = symbols_to_attempt[symbol_key]
+            used_up_symbols.append(symbols_to_attempt[symbol_key])
+            curr_symbol = symbol_key
+            
+    if key not in symbols_assigned.keys() and telescope is not None and telescope in symbols_to_attempt.keys():
+        symbols_assigned[key] = symbols_to_attempt[telescope]
+        used_up_symbols.append(symbols_to_attempt[telescope])
+        curr_symbol = telescope
+        
+    elif key not in symbols_assigned.keys() and instrument is not None and instrument in symbols_to_attempt.keys():
+        symbols_assigned[key] = symbols_to_attempt[instrument]
+        used_up_symbols.append(symbols_to_attempt[instrument])
+        curr_symbol = instrument
+
+    if key not in symbols_assigned.keys():
+        print("Key not in symbols assgined: "+str(key))
+        symbols_assigned[band] = symbols_assigned['generic']
+        
+    print("Colors assgined: "+str(colors_assigned))
+    print("symbols assgined: "+str(symbols_assigned))
+    
+    return colors_assigned[band], symbols_assigned[band]
 
 
 def find_nearest(wv,value):
@@ -215,6 +283,15 @@ def power_from_obs_flux(obs_flux, distance):
     power = obs_flux*4*np.pi*distance**2.0
     return power
     
+
+def distance_modulus_from_dist(d_cm = None, d_m = None, d_Km = None, d_AU = None, d_ly = None, d_pc = None,  d_Kpc = None, d_Mpc = None, d_Gpc = None):
+    '''inputs: every possible length
+       outputs: distance modulus-the corresponding distance modulus to the object, given its distance. This is taken to be its lumninosity distance
+       This function gives distance modulus to an object, from its distance'''
+    dist_pc = length_conversions(d_cm = d_cm, d_m = d_m, d_Km = d_Km, d_AU = d_AU, d_ly = d_ly, d_pc = d_pc, d_Kpc = d_Kpc, d_Mpc = d_Mpc, d_Gpc = d_Gpc)["pc"]
+    dist_mod = 5*np.log10(dist_pc/10)
+    
+    return dist_mod
 
 
 def get_absolute_mag(app_mag, dist_parsec):
@@ -624,7 +701,7 @@ def length_conversions(d_cm = None, d_m = None, d_Km = None, d_AU = None, d_ly =
     inputs = {"cm": d_cm, "m":d_m, "Km": d_Km, "AU": d_AU, "ly": d_ly, "pc": d_pc, "Kpc": d_Kpc, "Mpc": d_Mpc, "Gpc": d_Gpc}
     
     outputs = {"cm": None, "m":None, "Km": None, "AU": None, "ly": None, "pc": None, "Kpc": None, "Mpc": None, "Gpc": None}
-
+    
     input_unit = None
     input_val = None
     for unit in inputs.keys():
@@ -637,6 +714,8 @@ def length_conversions(d_cm = None, d_m = None, d_Km = None, d_AU = None, d_ly =
     for unit in outputs.keys():
         outputs[unit] = in_meters/conv_dic[unit]
         
+    dist_mod = 5*np.log10(outputs['pc']/10)
+    outputs["dist_mod"] = dist_mod
     return outputs
     
 

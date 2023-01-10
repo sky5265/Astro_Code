@@ -4,24 +4,9 @@ from Astro_useful_funcs import *
 from Math_useful_funcs import *
 
 
-obs_mag = 16.3
-z = 0.012
-
-dist_parsec = dist_from_redshift(z = z)['pc']
-
-abs_mag = get_absolute_mag(app_mag=obs_mag, dist_parsec=dist_parsec)
-print("absmag: "+str(abs_mag))
-
-'''
-d_m = length_conversions(d_Mpc = 9.3)["m"]
-print(z_from_dist(d_m))
-'''
-
-#(f*g)(t) = int_{-\infty}^{\infty} f(\tau)g(t-\tau)d\tau
-
-
-
-
+x = np.arange(-np.pi,np.pi,0.01)
+y = np.sin(x)
+pretty_plot(x, y, save_loc = 'testing_plot.png')
 
 '''
 
