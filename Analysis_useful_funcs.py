@@ -33,7 +33,7 @@ def ls(dir = None, extension = None):
     
     
         for filename in os.scandir(dir):
-            if filename.is_dir():
+            if filename.is_file():
                 long_name = filename.path+"/"
                 dirlist = os.listdir(long_name)
                 short_name = os.path.basename(filename.path)
@@ -44,7 +44,7 @@ def ls(dir = None, extension = None):
     else:
     
         for filename in os.scandir():
-            if filename.is_dir():
+            if filename.is_file():
                 long_name = filename.path+"/"
                 dirlist = os.listdir(long_name)
                 short_name = os.path.basename(filename.path)
