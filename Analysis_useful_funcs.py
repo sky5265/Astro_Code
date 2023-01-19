@@ -20,6 +20,27 @@ def is_int(element):
 
 def isfloat(element):
     return is_float(element)
+    
+def ls(dir, extension = None):
+    '''inputs: dir-directory to read the list of files from, extension-which extension should the files have to be listed (default to none-will list all file types)
+       outputs: list of files WITHOUT directory name
+       This function gets a list of all files within a directory name. Optionally, can input a specific file extension to only list out files with that extension. This will only list out the short name of the files, like ls would on terminal
+    
+    '''
+    
+    files_list = []
+    
+    for filename in os.scandir(dir):
+        if filename.is_dir():
+            long_name = filename.path+"/"
+            dirlist = os.listdir(long_name)
+            short_name = os.path.basename(filename.path)
+            for filename1 in dirlist:
+                extension = filename1[-4:]
+                if extension == '.txt':
+                    files_list.append(short_name)
+    return files_list
+            
 
 
 def write_to_file(file_loc, data_out, separator = ' ', headers=None, append=False):
