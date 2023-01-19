@@ -33,25 +33,15 @@ def ls(dir = None, extension = None):
     
     
         for filename in os.scandir(dir):
-            if filename.is_file():
-                long_name = filename.path+"/"
-                dirlist = os.listdir(long_name)
-                short_name = os.path.basename(filename.path)
-                for filename1 in dirlist:
-                    ext = filename1[-4:]
-                    if extension is not None and ext == extension:
-                        files_list.append(short_name)
+            ext = filename[-4:]
+            if extension is not None and ext == extension:
+                files_list.append(short_name)
     else:
     
         for filename in os.scandir():
-            if filename.is_file():
-                long_name = filename.path+"/"
-                dirlist = os.listdir(long_name)
-                short_name = os.path.basename(filename.path)
-                for filename1 in dirlist:
-                    extension = filename1[-4:]
-                    if extension is not None and ext == extension:
-                        files_list.append(short_name)
+            ext = filename[-4:]
+            if extension is not None and ext == extension:
+                files_list.append(short_name)
         
     return files_list
             
