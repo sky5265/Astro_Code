@@ -4,9 +4,12 @@ from Astro_useful_funcs import *
 from Math_useful_funcs import *
 
 
-x = np.arange(-np.pi,np.pi,0.01)
-y = np.sin(x)
-pretty_plot(x, y, save_loc = 'testing_plot.png')
+ra1_rad = radians_from_HHMMSS("15:09:18")
+ra2_rad = radians_from_HHMMSS("15:09:16")
+
+del_rad = abs(ra1_rad-ra2_rad)
+del_arcsec = del_rad*206265.
+print("del arcsec: "+str(del_arcsec))
 
 '''
 

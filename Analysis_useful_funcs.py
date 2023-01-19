@@ -208,7 +208,7 @@ def pretty_plot(x, y, xlabel = r'', ylabel = '', title = '', label = '', xlim = 
         This function plots x and y using plt.plot--I only have this function because I have a specific way I like plotting, and hate remembering all the details, so this function plots things for me'''
     
     
-    
+    matplotlib.rcParams['font.family'] = 'Palatino'
     W = 15
     H = 10
 
