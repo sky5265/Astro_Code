@@ -33,13 +33,13 @@ def ls(dir = None, extension = None):
     
     
         for filename in os.listdir(dir):
-            ext = filename[-4:]
+            ext = filename[-1*len(extension):]
             if extension is not None and ext == extension:
                 files_list.append(short_name)
     else:
     
         for filename in os.listdir():
-            ext = filename[-4:]
+            ext = filename[-1*len(extension):]
             print("ext: "+str(ext))
             if extension is not None and ext == extension:
                 files_list.append(short_name)
