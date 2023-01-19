@@ -40,6 +40,7 @@ def ls(dir = None, extension = None):
     
         for filename in os.listdir():
             ext = filename[-4:]
+            print("ext: "+str(ext))
             if extension is not None and ext == extension:
                 files_list.append(short_name)
         
