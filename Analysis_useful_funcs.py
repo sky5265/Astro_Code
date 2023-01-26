@@ -5,6 +5,39 @@ import os
 import matplotlib
 
 
+def plot_available_fonts(save_loc = 'fonts.png'):
+    import matplotlib.font_manager
+    fpaths = matplotlib.font_manager.findSystemFonts()
+
+    all_fonts = []
+
+    for i in fpaths:
+        
+        try:
+            f = matplotlib.font_manager.get_font(i)
+            print(f.family_name)
+            all_fonts.append(f.family_name)
+        except:
+            pass
+    W = 300
+    H = 20
+    xs_added = []
+    values_to_skip = []
+    #values_to_skip = [1, 2, 4, 5, 7, 8, 9, 11, 12, 13, 14, 15, 17, 18, 19, 20, 22, 23, 24, 25, 26, 27, 29, 30, 31, 32, 37, 41, 43, 44, 48, 49, 50, 52, 55, 56, 59, 62, 65, 67, ]
+    plt.figure(figsize=(W, H))
+    for i in range(len(all_fonts)):
+        if i in values_to_skip:
+            continue
+        try:
+            xs_added.append((math.floor(i*0.1))*160.0)
+            plt.text(x = (math.floor(i*0.1))*160.0, y = (i*0.1)%1, s = all_fonts[i]+": Absolute Magnitude", font_properties = all_fonts[i], fontsize = 20)
+            plt.text(x = (math.floor(i*0.1))*160.0, y = (i*0.1)%1+0.03, s = str(i), fontsize = 15)
+        except:
+            pass
+
+    plt.xlim([0, 10000])
+    plt.savefig(save_loc)
+
 def isint(element):
     return is_int(element)
     

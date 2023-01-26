@@ -4,12 +4,10 @@ from Astro_useful_funcs import *
 from Math_useful_funcs import *
 
 
-ra1_rad = radians_from_HHMMSS("15:09:18")
-ra2_rad = radians_from_HHMMSS("15:09:16")
-
-del_rad = abs(ra1_rad-ra2_rad)
-del_arcsec = del_rad*206265.
-print("del arcsec: "+str(del_arcsec))
+ra_oqm_host_galaxy = "15:09:10.31"
+print("RA in degrees: "+str(radians_from_HHMMSS(ra_oqm_host_galaxy)*180./np.pi))
+dec_oqm_host_galaxy = "52:32:19.72"
+print("dec in degrees: "+str(rad_from_degree_min_sec(dec_oqm_host_galaxy)*180./np.pi))
 
 '''
 
