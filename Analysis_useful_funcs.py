@@ -4,8 +4,18 @@ import matplotlib.pyplot as plt
 import os
 import matplotlib
 
+sKy_colors = {'light blue':'#63B8FF', 'blue':'#4876FF', 'very dark blue':'#27408B', 'blue grey':'#C6E2FF', 'dim cyan':'#98F5FF', 'cyan':'#00FFFF','red':'#FF4040', 'mute red':'#EE6363', 'dark mute red':'#CD5555', 'dark red':'#CD2626', 'green':'#00FF7F', 'honest green':'#008B45', 'dark green':'#008B45', 'grey':'#8B8989', 'dark grey':'#666666', 'orange':'#FF9912', 'purple':'#8E388E', 'magenta':'#FF00FF', 'purple pink':'#FF83FA', 'dark purple pink':'#BF3EFF', 'bright brown':'#8B5A00', 'dull brown':'#8B4726', 'mute brown':'#BC8F8F'}
 
-def plot_available_fonts(save_loc = 'fonts.png'):
+font1 = 'Shree Devanagari 714' #use this for unbolded text
+font2 = 'hiragino sans' #use this for bolded text
+matplotlib.rcParams["font.family"] = font1
+matplotlib.rc('axes', unicode_minus=False)
+matplotlib.rcParams['mathtext.fontset'] = 'custom'
+matplotlib.rcParams['mathtext.rm'] = font1
+matplotlib.rcParams['mathtext.it'] = font1
+matplotlib.rcParams['mathtext.bf'] = font1
+
+def plot_available_fonts(save_loc = 'fonts.png', bold = False):
     import matplotlib.font_manager
     fpaths = matplotlib.font_manager.findSystemFonts()
 
@@ -30,7 +40,10 @@ def plot_available_fonts(save_loc = 'fonts.png'):
             continue
         try:
             xs_added.append((math.floor(i*0.1))*160.0)
-            plt.text(x = (math.floor(i*0.1))*160.0, y = (i*0.1)%1, s = all_fonts[i]+": Absolute Magnitude", font_properties = all_fonts[i], fontsize = 20)
+            if bold:
+                plt.text(x = (math.floor(i*0.1))*160.0, y = (i*0.1)%1, s = all_fonts[i]+": Absolute Magnitude", font_properties = all_fonts[i], fontsize = 20, weight = 'bold')
+            else:
+                plt.text(x = (math.floor(i*0.1))*160.0, y = (i*0.1)%1, s = all_fonts[i]+": Absolute Magnitude", font_properties = all_fonts[i], fontsize = 20)
             plt.text(x = (math.floor(i*0.1))*160.0, y = (i*0.1)%1+0.03, s = str(i), fontsize = 15)
         except:
             pass
@@ -242,43 +255,52 @@ def get_order_of_mag(num):
     return res
     
 
-def pretty_plot(x, y, xlabel = r'', ylabel = '', title = '', label = '', xlim = [], ylim = [], xscale='', yscale='', save_loc='', display_or_nah = False, scatter = False, s = None, dark_theme = False, minimalist = False):
+def pretty_plot(x, y, xlabel = r'', ylabel = '', title = '', label = '', xlim = [], ylim = [], xscale='', yscale='', save_loc='', display_or_nah = False, scatter = False, s = None, dark_theme = False, minimalist = False, color = None, bold = False):
     '''inputs: x-indpendent variable of plot to create, y-dependent variable of plot to create, xlabel-string of label on x-axis, ylabel-string of label on y-axis, title-string of title for figure, xlim-list of limits of plot for x-axis, ylim-list of limits of plot for y-axis, labels-string of label of plot, save_loc-string location in file where to store the plot (default to ''; if '' is set, the figure won't be saved), display_or_nah-boolean variable to control whether the figure should be displayed (default to False)
         outputs: none
         This function plots x and y using plt.plot--I only have this function because I have a specific way I like plotting, and hate remembering all the details, so this function plots things for me'''
     
     
-    matplotlib.rcParams['font.family'] = 'Palatino'
+    weight = 'normal'
+    
+    if bold:
+        plt.rcParams["font.family"] = font2
+        weight = 'bold'
+    else:
+        plt.rcParams["font.family"] = font1
+    plt.rc('axes', unicode_minus=False)
     W = 15
     H = 10
 
     plt.figure(figsize=(W, H))
     
+    '''
     if dark_theme:
         plt.style.use('dark_background')
     elif minimalist:
         plt.style.use('fivethirtyeight')
     else:
-        plt.style.use('seaborn')
+        plt.style.use('seaborn')'''
         
     
-        
+    if color is None:
+        color = sKy_colors[list(sKy_colors.keys())[0]]
     
     if not scatter:
     
         if len(label) > 0:
-            plt.plot(x, y, linewidth=H/3, label=label)
+            plt.plot(x, y, linewidth=H/3, label=label, color = color)
         else:
-            plt.plot(x, y, linewidth=H/3)
+            plt.plot(x, y, linewidth=H/3, color = color)
     else:
         if s == None:
             s = 5
         if len(label) > 0:
-            plt.scatter(x, y, s = H*s, label=label)
+            plt.scatter(x, y, s = H*s, label=label, color = color)
         else:
-            plt.scatter(x, y, s = H*s)
+            plt.scatter(x, y, s = H*s, color = color)
     if len(xlabel) > 0:
-        plt.xlabel(xlabel, fontsize=2*W)
+        plt.xlabel(xlabel, fontsize=2*W, weight = weight)
         
     plt.xticks(fontsize=1.5*W)
     
@@ -289,15 +311,15 @@ def pretty_plot(x, y, xlabel = r'', ylabel = '', title = '', label = '', xlim = 
         plt.ylim(ylim)
     
     if len(ylabel) > 0:
-        plt.ylabel(ylabel, fontsize=2*W)
+        plt.ylabel(ylabel, fontsize=2*W, weight = weight)
         
     plt.yticks(fontsize=1.5*W)
     
     if len(title) > 0:
-        plt.title(title, fontsize=2*W)
+        plt.title(title, fontsize=2*W, weight = weight)
         
     if len(label):
-        plt.legend(fontsize = 1.5*H)
+        plt.legend(fontsize = 1.5*H, weight = weight)
     
     if xscale == 'log':
         plt.xscale('log')
