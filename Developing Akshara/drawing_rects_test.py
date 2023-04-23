@@ -42,3 +42,15 @@ fig.savefig('Blackbody.pdf', bbox_inches= 'tight')
 
 fig = draw_rectangle(text = 'Photometry', rect_color = sKy_colors['mute brown'], text_color = sKy_colors['very dark blue'], fontsize = 40)
 fig.savefig('Photometry.pdf', bbox_inches= 'tight')
+
+mkdir('Tardis Stuff')
+
+fig = draw_rectangle(text = 'Initialize\nPackets', rect_color = sKy_colors['mute brown'], text_color = sKy_colors['very dark blue'], fontsize = 40)
+fig.savefig('Tardis Stuff/Initialize.pdf', bbox_inches= 'tight')
+
+fig = draw_rectangle(text = 'Propogate\nPackets', rect_color = sKy_colors['mute brown'], text_color = sKy_colors['very dark blue'], fontsize = 40)
+fig.savefig('Tardis Stuff/Propogate.pdf', bbox_inches= 'tight')
+
+
+fig = draw_rectangle(text = 'Final\nSpectrum', rect_color = sKy_colors['mute brown'], text_color = sKy_colors['very dark blue'], fontsize = 40)
+fig.savefig('Tardis Stuff/Final Spec.pdf', bbox_inches= 'tight')
