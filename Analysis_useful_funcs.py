@@ -90,6 +90,8 @@ def conv_to_deluxe_table(file_loc, deluxe_table_loc = None, table_caption = None
             
     keys = list(data.keys())
     
+    if switch_columns is None:
+        switch_columns = []
     for switch in switch_columns:
         a = keys[int(switch[:switch.index(',')])]
         b = keys[int(switch[switch.index(',')+1:])]
