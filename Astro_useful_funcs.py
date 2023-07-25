@@ -2,13 +2,21 @@ import numpy as np
 import math
 import random
 import warnings
+import astropy
+from astropy.cosmology import Planck15 as cosmo
+from astropy import units as u
 
 G_SI = 6.674E-11 #Universal gravitational constant G in SI units N*m^2/kg^2
 G_cgs = 6.674E-8 #Universal gravitational constant G in cgs units dyne*cm^2/g^2
 c_ms = 3.0E8 #speed of light in meters/sec
 
-H_0_km_s_Mpc = 72.0 #hubble constant in units of km/s/Mpc
-H_0_hz = 2.269E-18 #hubble constant in units of 1/sec, this is useful for SI unit calculations
+
+#cosmology updated by the Plank 15 update, as of July 11 2023 (SHu 1288)
+#https://ui.adsabs.harvard.edu/abs/2016A%26A...594A..13P/abstract
+H0 = cosmo.H(0)
+H_0_km_s_Mpc = H0.value #hubble constant in units of km/s/Mpc
+hz = 1.0/u.s
+H_0_hz = H0.to(hz).value #hubble constant in units of 1/sec, this is useful for SI unit calculations
 H_0 = H_0_km_s_Mpc
 H_0_SI = H_0_hz
 
@@ -265,7 +273,40 @@ def convolve_empirical(x, y, kernel_func, width = -np.inf, x_prec = -np.inf):
     xs += midpoint
     return {"Xs": Xs, "xs": xs, "kernel_arr": np.asarray(kernel_arr), "convolved": np.asarray(convolved), "norm_convolved": np.asarray(convolved)/np.max(convolved)}
     
+def correct_reddening(wavelength_angstroms, EBV,dataset = None, band = None, assume_optical = True):
+    '''corrects a given band of observations given EBV extinction along that line of sight. This uses the equation: M_true = M_observed + A, derived from f_lambda^true = f_lambda^obs*10^(A/2.5)'''
+    '''If band is given, then the standard R value for that band is used to do the extinction correction'''
     
+    lambda_alpha = 6563
+    lambda_beta = 4861
+    R_h_alpha = 2.535
+    R_h_beta = 3.609
+    #I know R goes as 1/lambda in optical, so
+    #R = k/lambda, using K = R1*lambda1 = R2 * lambda2, using the value at halpha, you get K = 16637.2 and at hbeta gives K = 17543.3, so I'll use the average K = 17090.3
+    band_standard_R_values = {"B" : 4.1, "V" : 3.1, "R":2.3, "I":1.5}
+    if band is None or band.upper() not in band_standard_R_values.keys():
+        K = 17090.3
+        R_optical = 17090.3/wavelength_angstroms
+        
+        if not(wavelength_angstroms > 2000 and wavelength_angstroms < 9000):
+            assume_optical = False
+        if assume_optical:
+            R = R_optical
+            
+    else:
+        R = band_standard_R_values[band.upper()]
+        
+    A = R*EBV
+    
+    if dataset is None:
+        return A
+
+    #notice: R_B is 4.1 versus R_V is 3.1. We also know that dust extinction causes 'reddening'. As in, the flux in B band is decreased more than the flux in V band. Therefore, the B-mag value is numerically increased more than the V-mag value. Therefore, A is a number that is added to each band's magnitude by the dust. To correct for the dust, we must subtract A away from each band.
+    if isfloat(dataset):
+        return dataset - A
+    else:
+        return np.asarray(dataset)-A
+
 def correct_cosmological_redshift(wavelengths, fluxes, z):
     '''inputs: wavelengths-list of wavelengths for the spectrum that is passed in, fluxes-corresponding list of fluxes for the spectrum, z-cosmological redshift of the obeject emitting this spectrum
        outputs: wavelengths_prog_frame-list of wavelengths of the spectrum in progenitor frame, fluxes_prog_frame-list of corresponding fluxes of the spectrum in progenitor frame
@@ -741,9 +782,8 @@ def z_from_dist(dist_m, hubble_const = H_0_SI):
        outputs: z-redshift of an object
        This uses the formula D_p = \frac{2c}{H0}[1-(1+z)^-0.5] to get redshift, given distance to an object. Note that this formula only works for small redshifts'''
        
-       
-    
-    z = (1-dist_m*hubble_const/(2*c_ms))**-2.0-1.0
+
+    z = ((1-dist_m*hubble_const/(2*c_ms))**-2.0)-1.0
     
     if z > 1:
         raise Exception("Redshift passed in: "+str(z)+" is too large to use approximate formula for physical distance.")

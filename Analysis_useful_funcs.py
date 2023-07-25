@@ -3,17 +3,47 @@ import math
 import matplotlib.pyplot as plt
 import os
 import matplotlib
+from matplotlib.ticker import (MultipleLocator, FormatStrFormatter,
+                               AutoMinorLocator)
 
 sKy_colors = {'light blue':'#63B8FF', 'blue':'#4876FF', 'very dark blue':'#27408B', 'blue grey':'#C6E2FF', 'dim cyan':'#98F5FF', 'cyan':'#00FFFF','red':'#FF4040', 'mute red':'#EE6363', 'dark mute red':'#CD5555', 'dark red':'#CD2626', 'green':'#00FF7F', 'honest green':'#008B45', 'dark green':'#008B45', 'grey':'#8B8989', 'dark grey':'#666666', 'orange':'#FF9912', 'purple':'#8E388E', 'magenta':'#FF00FF', 'purple pink':'#FF83FA', 'dark purple pink':'#BF3EFF', 'bright brown':'#8B5A00', 'dull brown':'#8B4726', 'mute brown':'#BC8F8F'}
 
 font1 = 'Shree Devanagari 714' #use this for unbolded text
 font2 = 'hiragino sans' #use this for bolded text
-matplotlib.rcParams["font.family"] = font1
-matplotlib.rc('axes', unicode_minus=False)
+W = 15
+H = 10
+fig, ax = plt.subplots(figsize=(W, H))
+
+#ax.xaxis.set_major_locator(MultipleLocator(20))
+#ax.xaxis.set_major_formatter(FormatStrFormatter('%d'))
+
+# For the minor ticks, use no labels; default NullFormatter.
+ax.xaxis.set_minor_locator(AutoMinorLocator())
+ax.yaxis.set_minor_locator(AutoMinorLocator())
+plt.tick_params(
+    which='major',
+    bottom='on',
+    top='on',
+    left='on',
+    right='on',
+    direction='in',
+    length=25)
+plt.tick_params(
+    which='minor',
+    bottom='on',
+    top='on',
+    left='on',
+    right='on',
+    direction='in',
+    length=10)
+matplotlib.rcParams["font.family"] = 'serif'
+#matplotlib.rc('axes', unicode_minus=False)
 matplotlib.rcParams['mathtext.fontset'] = 'custom'
-matplotlib.rcParams['mathtext.rm'] = font1
-matplotlib.rcParams['mathtext.it'] = font1
-matplotlib.rcParams['mathtext.bf'] = font1
+matplotlib.rcParams['mathtext.rm'] = 'serif'
+matplotlib.rcParams['mathtext.it'] = 'serif'
+matplotlib.rcParams['mathtext.bf'] = 'serif'
+plt.xticks(fontsize=1.5*W)
+plt.yticks(fontsize=1.5*W)
 
 def plot_available_fonts(save_loc = 'fonts.png', bold = False):
     import matplotlib.font_manager
@@ -139,7 +169,7 @@ def conv_to_deluxe_table(file_loc, deluxe_table_loc = None, table_caption = None
         line = ''
         for j in range(len(keys)-1):
             key = keys[j]
-            line += data[key][i] + " & "
+            line += data[key][i] + "\t&\t"
         #print("keys: "+str(keys))
         #print("keys[len(keys)-1]: "+str(keys[len(keys)-1]))
         line += data[keys[-1]][i]+" \\\\\n"
@@ -275,39 +305,6 @@ def read_file(file_loc, comments ='#', separators = [], skip_lines = [-1], heade
                 dict[headers[j]].append(lines[i][j])
         
     return {"lines": lines, "dict": dict, "skipped_lines":skipped_lines}
-        
-def correct_reddening(dataset, wavelength_angstroms, EBV, band = None, assume_optical = True):
-    '''corrects a given band of observations given EBV extinction along that line of sight. This uses the equation: M_true = M_observed + A, derived from f_lambda^true = f_lambda^obs*10^(A/2.5)'''
-    '''If band is given, then the standard R value for that band is used to do the extinction correction'''
-    
-    lambda_alpha = 6563
-    lambda_beta = 4861
-    R_h_alpha = 2.535
-    R_h_beta = 3.609
-    #I know R goes as 1/lambda in optical, so
-    #R = k/lambda, using K = R1*lambda1 = R2 * lambda2, using the value at halpha, you get K = 16637.2 and at hbeta gives K = 17543.3, so I'll use the average K = 17090.3
-    band_standard_R_values = {"B" : 4.1, "V" : 3.1, "R":2.3, "I":1.5}
-    if band is None or band.upper() not in band_standard_R_values.keys():
-        K = 17090.3
-        R_optical = 17090.3/wavelength_angstroms
-        
-        if not(wavelength_angstroms > 2000 and wavelength_angstroms < 9000):
-            assume_optical = False
-        if assume_optical:
-            R = R_optical
-            
-    else:
-        R = band_standard_R_values[band.upper()]
-        
-    A = R*EBV
-    
-    #notice: R_B is 4.1 versus R_V is 3.1. We also know that dust extinction causes 'reddening'. As in, the flux in B band is decreased more than the flux in V band. Therefore, the B-mag value is numerically increased more than the V-mag value. Therefore, A is a number that is added to each band's magnitude by the dust. To correct for the dust, we must subtract A away from each band.
-    if isfloat(dataset):
-        return dataset - A
-    else:
-        return np.asarray(dataset)-A
-
-
 def is_float(element):
     '''checks if an element can be turned into a float'''
     try:
@@ -344,24 +341,46 @@ def get_order_of_mag(num):
     return res
     
 
-def pretty_plot(x, y, xlabel = r'', ylabel = '', title = '', label = '', xlim = [], ylim = [], xscale='', yscale='', save_loc='', display_or_nah = False, scatter = False, s = None, dark_theme = False, minimalist = False, color = None, bold = False):
+def pretty_plot(x, y, xlabel = r'', ylabel = '', title = '', label = '', xlim = [], ylim = [], xscale='', yscale='', vlines = [], hlines = [], save_loc='', display_or_nah = False, scatter = False, s = None, dark_theme = False, minimalist = False, color = None, bold = False):
     '''inputs: x-indpendent variable of plot to create, y-dependent variable of plot to create, xlabel-string of label on x-axis, ylabel-string of label on y-axis, title-string of title for figure, xlim-list of limits of plot for x-axis, ylim-list of limits of plot for y-axis, labels-string of label of plot, save_loc-string location in file where to store the plot (default to ''; if '' is set, the figure won't be saved), display_or_nah-boolean variable to control whether the figure should be displayed (default to False)
         outputs: none
         This function plots x and y using plt.plot--I only have this function because I have a specific way I like plotting, and hate remembering all the details, so this function plots things for me'''
     
-    
-    weight = 'normal'
-    
-    if bold:
-        plt.rcParams["font.family"] = font2
-        weight = 'bold'
-    else:
-        plt.rcParams["font.family"] = font1
-    plt.rc('axes', unicode_minus=False)
+        
     W = 15
     H = 10
+    fig, ax = plt.subplots(figsize=(W, H))
 
-    plt.figure(figsize=(W, H))
+    #ax.xaxis.set_major_locator(MultipleLocator(20))
+    #ax.xaxis.set_major_formatter(FormatStrFormatter('%d'))
+
+    # For the minor ticks, use no labels; default NullFormatter.
+    ax.xaxis.set_minor_locator(AutoMinorLocator())
+    ax.yaxis.set_minor_locator(AutoMinorLocator())
+    plt.tick_params(
+        which='major',
+        bottom='on',
+        top='on',
+        left='on',
+        right='on',
+        direction='in',
+        length=25)
+    plt.tick_params(
+        which='minor',
+        bottom='on',
+        top='on',
+        left='on',
+        right='on',
+        direction='in',
+        length=10)
+    matplotlib.rcParams["font.family"] = 'serif'
+    #matplotlib.rc('axes', unicode_minus=False)
+    matplotlib.rcParams['mathtext.fontset'] = 'custom'
+    matplotlib.rcParams['mathtext.rm'] = 'serif'
+    matplotlib.rcParams['mathtext.it'] = 'serif'
+    matplotlib.rcParams['mathtext.bf'] = 'serif'
+
+    weight = 'normal'
     
     '''
     if dark_theme:
@@ -388,6 +407,9 @@ def pretty_plot(x, y, xlabel = r'', ylabel = '', title = '', label = '', xlim = 
             plt.scatter(x, y, s = H*s, label=label, color = color)
         else:
             plt.scatter(x, y, s = H*s, color = color)
+
+
+
     if len(xlabel) > 0:
         plt.xlabel(xlabel, fontsize=2*W, weight = weight)
         
@@ -403,7 +425,15 @@ def pretty_plot(x, y, xlabel = r'', ylabel = '', title = '', label = '', xlim = 
         plt.ylabel(ylabel, fontsize=2*W, weight = weight)
         
     plt.yticks(fontsize=1.5*W)
-    
+
+    if len(vlines) > 0:
+        ylim = plt.gca().get_ylim()
+        plt.vlines(vlines,ylim[0], ylim[1])
+
+    if len(hlines) > 0:
+        xlim = plt.gca().get_xlim()
+        plt.hlines(hlines,xlim[0], xlim[1])
+
     if len(title) > 0:
         plt.title(title, fontsize=2*W, weight = weight)
         
