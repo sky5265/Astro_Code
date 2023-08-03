@@ -1,5 +1,5 @@
 import sys
-sys.path.insert(0, '/Users/sky5265/Documents/GitHub/Astro_Code')
+sys.path.insert(0, '/Users/karthik/Documents/GitHub/Astro_Code')
 from Astro_useful_funcs import *
 from Analysis_useful_funcs import *
 
