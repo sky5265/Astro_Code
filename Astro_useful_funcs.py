@@ -5,6 +5,7 @@ import warnings
 import astropy
 from astropy.cosmology import Planck15 as cosmo
 from astropy import units as u
+from Analysis_useful_funcs import *
 
 G_SI = 6.674E-11 #Universal gravitational constant G in SI units N*m^2/kg^2
 G_cgs = 6.674E-8 #Universal gravitational constant G in cgs units dyne*cm^2/g^2
