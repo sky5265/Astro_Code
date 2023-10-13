@@ -7,6 +7,7 @@ from matplotlib.ticker import (MultipleLocator, FormatStrFormatter,
                                AutoMinorLocator)
 
 sKy_colors = {'light blue':'#63B8FF', 'blue':'#4876FF', 'very dark blue':'#27408B', 'blue grey':'#C6E2FF', 'dim cyan':'#98F5FF', 'cyan':'#00FFFF','red':'#FF4040', 'mute red':'#EE6363', 'dark mute red':'#CD5555', 'dark red':'#CD2626', 'green':'#00FF7F', 'honest green':'#008B45', 'dark green':'#008B45', 'grey':'#8B8989', 'dark grey':'#666666', 'orange':'#FF9912', 'purple':'#8E388E', 'magenta':'#FF00FF', 'purple pink':'#FF83FA', 'dark purple pink':'#BF3EFF', 'bright brown':'#8B5A00', 'dull brown':'#8B4726', 'mute brown':'#BC8F8F'}
+sKy_colors_list = [sKy_colors[i] for i in sKy_colors.keys()]
 
 font1 = 'Shree Devanagari 714' #use this for unbolded text
 font2 = 'hiragino sans' #use this for bolded text
@@ -339,6 +340,67 @@ def get_order_of_mag(num):
     res = math.floor(order)
 
     return res
+
+
+def set_pretty_title(plt, title, weight, W):
+    plt.title(title, fontsize=2*W, weight = weight)
+    return plt
+
+def set_pretty_xlabel(plt, xlabel, weight, W):
+    plt.xlabel(xlabel, fontsize=2*W, weight = weight)
+    return plt
+
+def set_pretty_ylabel(plt, ylabel, weight, W):
+    plt.ylabel(ylabel, fontsize=2*W, weight = weight)
+    return plt
+
+
+def get_pretty_plot():
+    W = 15
+    H = 10
+    fig, ax = plt.subplots(figsize=(W, H))
+
+    #ax.xaxis.set_major_locator(MultipleLocator(20))
+    #ax.xaxis.set_major_formatter(FormatStrFormatter('%d'))
+
+    # For the minor ticks, use no labels; default NullFormatter.
+    ax.xaxis.set_minor_locator(AutoMinorLocator())
+    ax.yaxis.set_minor_locator(AutoMinorLocator())
+    plt.tick_params(
+        which='major',
+        bottom='on',
+        top='on',
+        left='on',
+        right='on',
+        direction='in',
+        length=25)
+    plt.tick_params(
+        which='minor',
+        bottom='on',
+        top='on',
+        left='on',
+        right='on',
+        direction='in',
+        length=10)
+    matplotlib.rcParams["font.family"] = 'serif'
+    #matplotlib.rc('axes', unicode_minus=False)
+    matplotlib.rcParams['mathtext.fontset'] = 'custom'
+    matplotlib.rcParams['mathtext.rm'] = 'serif'
+    matplotlib.rcParams['mathtext.it'] = 'serif'
+    matplotlib.rcParams['mathtext.bf'] = 'serif'
+    plt.xticks(fontsize=1.5*W)
+    plt.yticks(fontsize=1.5*W)
+    weight = 'normal'
+    
+    '''
+    if dark_theme:
+        plt.style.use('dark_background')
+    elif minimalist:
+        plt.style.use('fivethirtyeight')
+    else:
+        plt.style.use('seaborn')'''
+    return plt, W, H
+
     
 
 def pretty_plot(x, y, xlabel = r'', ylabel = '', title = '', label = '', xlim = [], ylim = [], xscale='', yscale='', vlines = [], hlines = [], save_loc='', display_or_nah = False, scatter = False, s = None, dark_theme = False, minimalist = False, color = None, bold = False):
@@ -435,7 +497,7 @@ def pretty_plot(x, y, xlabel = r'', ylabel = '', title = '', label = '', xlim = 
         plt.hlines(hlines,xlim[0], xlim[1])
 
     if len(title) > 0:
-        plt.title(title, fontsize=2*W, weight = weight)
+        set_pretty_title(plt = plt, title = title, weight = weight, W = W)
         
     if len(label):
         plt.legend(fontsize = 1.5*H, weight = weight)
