@@ -6,7 +6,14 @@ import matplotlib
 from matplotlib.ticker import (MultipleLocator, FormatStrFormatter,
                                AutoMinorLocator)
 
-sKy_colors = {'light blue':'#63B8FF', 'blue':'#4876FF', 'very dark blue':'#27408B', 'blue grey':'#C6E2FF', 'dim cyan':'#98F5FF', 'cyan':'#00FFFF','red':'#FF4040', 'mute red':'#EE6363', 'dark mute red':'#CD5555', 'dark red':'#CD2626', 'green':'#00FF7F', 'honest green':'#008B45', 'dark green':'#008B45', 'grey':'#8B8989', 'dark grey':'#666666', 'orange':'#FF9912', 'purple':'#8E388E', 'magenta':'#FF00FF', 'purple pink':'#FF83FA', 'dark purple pink':'#BF3EFF', 'bright brown':'#8B5A00', 'dull brown':'#8B4726', 'mute brown':'#BC8F8F'}
+sKy_colors = {'light blue':'#63B8FF', 'blue':'#4876FF', 'very dark blue':'#27408B', 
+'blue grey':'#C6E2FF', 'dim cyan':'#98F5FF', 'cyan':'#00FFFF','red':'#FF4040', 
+'mute red':'#EE6363', 'dark mute red':'#CD5555', 'dark red':'#CD2626', 'green':'#00FF7F', 
+'honest green':'#008B45', 'dark green':'#008B45', 'grey':'#8B8989', 'dark grey':'#666666', 
+'orange':'#FF9912', 'purple':'#8E388E', 'magenta':'#FF00FF', 'purple pink':'#FF83FA', 
+'dark purple pink':'#BF3EFF', 'bright brown':'#8B5A00', 'dull brown':'#8B4726', 'mute brown':'#BC8F8F'}
+
+
 sKy_colors_list = [sKy_colors[i] for i in sKy_colors.keys()]
 
 font1 = 'Shree Devanagari 714' #use this for unbolded text
@@ -326,6 +333,7 @@ def mkdir(dir_loc):
     '''inputs: dir_loc-location of directory to create
        outputs: none
        This function creates the directory at dir_loc if it doesn't exist. If it does exist, nothing happens'''
+
     if not os.path.isdir(dir_loc):
         os.mkdir(dir_loc)
         
@@ -342,16 +350,23 @@ def get_order_of_mag(num):
     return res
 
 
-def set_pretty_title(plt, title, weight, W):
-    plt.title(title, fontsize=2*W, weight = weight)
+def set_pretty_title(plt, title, fontsize = 2*W, weight = 'normal'):
+    plt.title(title, fontsize=fontsize, weight = weight)
     return plt
 
-def set_pretty_xlabel(plt, xlabel, weight, W):
-    plt.xlabel(xlabel, fontsize=2*W, weight = weight)
+def set_pretty_xlabel(plt, xlabel, fontsize = 2*W, weight = 'normal'):
+    plt.xlabel(xlabel, fontsize=fontsize, weight = weight)
     return plt
 
-def set_pretty_ylabel(plt, ylabel, weight, W):
-    plt.ylabel(ylabel, fontsize=2*W, weight = weight)
+def set_pretty_ylabel(plt, ylabel, fontsize = 2*W, weight = 'normal'):
+    plt.ylabel(ylabel, fontsize=fontsize, weight = weight)
+    return plt
+
+def set_pretty_legend(plt, fontsize = 1.5*H, ncol = np.nan):
+    if ncol == np.nan:
+        plt.legend(fontsize = fontsize)   
+    else:
+        plt.legend(fontsize = fontsize, ncol = ncol)
     return plt
 
 
@@ -497,7 +512,7 @@ def pretty_plot(x, y, xlabel = r'', ylabel = '', title = '', label = '', xlim = 
         plt.hlines(hlines,xlim[0], xlim[1])
 
     if len(title) > 0:
-        set_pretty_title(plt = plt, title = title, weight = weight, W = W)
+        set_pretty_title(plt = plt, title = title, weight = weight, fontsize = 2*W)
         
     if len(label):
         plt.legend(fontsize = 1.5*H, weight = weight)
