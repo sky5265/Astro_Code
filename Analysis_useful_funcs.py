@@ -5,6 +5,7 @@ import os
 import matplotlib
 from matplotlib.ticker import (MultipleLocator, FormatStrFormatter,
                                AutoMinorLocator)
+import shutil
 
 sKy_colors = {'light blue':'#63B8FF', 'blue':'#4876FF', 'very dark blue':'#27408B', 
 'blue grey':'#C6E2FF', 'dim cyan':'#98F5FF', 'cyan':'#00FFFF','red':'#FF4040', 
@@ -52,6 +53,15 @@ matplotlib.rcParams['mathtext.it'] = 'serif'
 matplotlib.rcParams['mathtext.bf'] = 'serif'
 plt.xticks(fontsize=1.5*W)
 plt.yticks(fontsize=1.5*W)
+
+def rm(file):
+    '''inputs: file-string file name of file to be removed
+       outputs: none
+       This function deletes a file or folder given the string of the location'''
+    if os.path.isdir(file):
+        shutil.rmtree(file)
+    elif os.path.isfile(file):
+        os.remove(file)
 
 def plot_available_fonts(save_loc = 'fonts.png', bold = False):
     import matplotlib.font_manager
@@ -234,7 +244,7 @@ def write_to_file(file_loc, data_out, separator = ' ', headers=None, append=Fals
         out = open(file_loc ,'a+')
     
     if type(data_out) is str:
-        out.write(data_out+"\n")
+        out.write(data_out)
         
     else:
         for i  in range(len(data_out)):
@@ -336,6 +346,11 @@ def mkdir(dir_loc):
 
     if not os.path.isdir(dir_loc):
         os.mkdir(dir_loc)
+def cp(src, dst):
+    '''inputs: src-name of source file to copy from
+       outputs: dst-name of destination file to copy to
+       This function copies a file from src to dst'''
+    shutil.copy(src, dst)
         
 def get_order_of_mag(num):
     '''returns order of magnitude for a number passed in. This returns just the exponent, so if you pass in 8.9E-45, it will return -45'''
@@ -524,7 +539,7 @@ def pretty_plot(x, y, xlabel = r'', ylabel = '', title = '', label = '', xlim = 
         plt.yscale('log')
         
     if len(save_loc) > 0:
-        plt.savefig(save_loc)
+        plt.savefig(save_loc, bbox_inches=  'tight')
         
     if display_or_nah:
         plt.show()
