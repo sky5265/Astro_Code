@@ -63,6 +63,18 @@ def rm(file):
     elif os.path.isfile(file):
         os.remove(file)
 
+def color_list(i):
+    '''inputs: i-integer number of colors to generate
+       outputs: color_list-list of colors generated from sKy_colors dictionary with length i
+       This function generates a list of i colors that can be used in a color map. It doesn't 
+       do anything super intelligent. It just picks i random colors from the dictionary
+    '''
+
+    import random
+    idx_list = np.asarray(random.sample(range(len(sKy_colors.keys())), i))
+    return [sKy_colors_list[i] for i in idx_list]
+
+
 def plot_available_fonts(save_loc = 'fonts.png', bold = False):
     import matplotlib.font_manager
     fpaths = matplotlib.font_manager.findSystemFonts()
