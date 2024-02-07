@@ -14,6 +14,39 @@ sKy_colors = {'light blue':'#63B8FF', 'blue':'#4876FF', 'very dark blue':'#27408
 'orange':'#FF9912', 'purple':'#8E388E', 'magenta':'#FF00FF', 'purple pink':'#FF83FA', 
 'dark purple pink':'#BF3EFF', 'bright brown':'#8B5A00', 'dull brown':'#8B4726', 'mute brown':'#BC8F8F'}
 
+color_schemes = {
+
+"elsa":[sKy_colors["blue"], sKy_colors["blue grey"], 
+sKy_colors["dark purple pink"], sKy_colors["cyan"], sKy_colors["light blue"], 
+sKy_colors["magenta"], sKy_colors["grey"]],
+
+"simplex":[sKy_colors['orange'], sKy_colors['grey'], sKy_colors['mute brown'], sKy_colors['blue grey']],
+
+"autumn": [sKy_colors['grey'], sKy_colors['mute red'], sKy_colors['orange'], sKy_colors['dark red']],
+
+"2145": [sKy_colors['dark purple pink'], sKy_colors['light blue'], sKy_colors['purple pink'],  sKy_colors['blue'],
+ sKy_colors['magenta'],  sKy_colors['very dark blue']],
+
+"ocean": [sKy_colors['cyan'], sKy_colors['blue grey'], 
+sKy_colors['light blue'], sKy_colors['blue'], sKy_colors['very dark blue']],
+
+"red_blue": [sKy_colors['dark red'], sKy_colors['mute red'], 
+sKy_colors['orange'], sKy_colors['very dark blue'], sKy_colors['blue'], sKy_colors['light blue']],
+
+"rainforest_flower":[sKy_colors['honest green'], sKy_colors['grey'], 
+sKy_colors['purple'], sKy_colors['magenta'], sKy_colors['purple pink'], sKy_colors['dark purple pink']],
+
+"childhood":[sKy_colors['dark purple pink'], sKy_colors['magenta'], 
+sKy_colors['orange'], sKy_colors['green'], sKy_colors['blue'], sKy_colors['red'], sKy_colors['cyan']],
+
+"chill": [sKy_colors['light blue'], sKy_colors['blue grey'], sKy_colors['mute red'], 
+sKy_colors['grey'], sKy_colors['purple pink'], 
+sKy_colors['mute brown']],
+
+"icecream": ['black', 'pink', sKy_colors['grey'],  sKy_colors['purple pink']]
+
+}
+
 
 sKy_colors_list = [sKy_colors[i] for i in sKy_colors.keys()]
 
@@ -63,16 +96,30 @@ def rm(file):
     elif os.path.isfile(file):
         os.remove(file)
 
-def color_list(i):
-    '''inputs: i-integer number of colors to generate
+def sKy_color_list(i, scheme = None):
+    '''inputs: i-integer number of colors to generate, scheme-name of color scheme to choose colors from
        outputs: color_list-list of colors generated from sKy_colors dictionary with length i
        This function generates a list of i colors that can be used in a color map. It doesn't 
-       do anything super intelligent. It just picks i random colors from the dictionary
+       do anything super intelligent. It just picks i random colors from the dictionary. Scheme allows you to 
+       specify if you want the colors to come from a color scheme that exists. It will pick the first i colors 
+       from the specified color scheme, if the scheme exists. If i is larger than the number of colors in
+       the scheme, more colors will be chosen from the rest of the set of colors
     '''
 
     import random
-    idx_list = np.asarray(random.sample(range(len(sKy_colors.keys())), i))
-    return [sKy_colors_list[i] for i in idx_list]
+    tor = None
+    if scheme is None or scheme not in color_schemes.keys():
+        idx_list = np.asarray(random.sample(range(len(sKy_colors.keys())), i))
+        tor = [sKy_colors_list[i] for i in idx_list]
+    else:
+
+        tor = [color_schemes[scheme][j] for j in range(min([i, len(color_schemes[scheme])]))]
+        if len(tor) < i:
+            idx_list = np.asarray(random.sample(range(len(sKy_colors.keys())), i-len(tor)))
+            for k in idx_list:
+                tor.append(sKy_colors_list[k])
+
+    return tor
 
 
 def plot_available_fonts(save_loc = 'fonts.png', bold = False):
