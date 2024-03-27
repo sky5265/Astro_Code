@@ -96,6 +96,9 @@ def rm(file):
     elif os.path.isfile(file):
         os.remove(file)
 
+def get_colors(i, scheme = None):
+    return sKy_color_list(i, scheme)
+
 def sKy_color_list(i, scheme = None):
     '''inputs: i-integer number of colors to generate, scheme-name of color scheme to choose colors from
        outputs: color_list-list of colors generated from sKy_colors dictionary with length i
