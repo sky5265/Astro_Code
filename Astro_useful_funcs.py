@@ -207,8 +207,22 @@ def convolve_analytical(seed_func, kernel_func, x_half_width, x_prec):
     
 def convolve_empirical(x, y, kernel_func, width = -np.inf, x_prec = -np.inf):
 
-    '''inputs: x-an array of x values (independent variables) over which the seed function is empirically defined, y-an array of y values (dependent values) that hold the actual seed function values, kernel_func-a python function that gives the mathematical kernel function that we want to convolve our seed function with, x_prec-precision of the integral (defaults to -infinity, which the function interpret as estimating the accuracy of the precision from the precision of the x array)
-       outputs: Xs-an array of the independent variable that is twice as long as the region over which the kernel function and seed function are defined. This is the region over which the convolved function will be defined, xs-array of the independent variable over which the kernel function and seed function are defined, kernel_arr-array of kernel values defined over xs, convolved-array of final convolved function, norm_convolved-array of final convolved function divided by max value of convolved,
+    '''inputs: x-an array of x values (independent variables) 
+    over which the seed function is empirically defined,
+     y-an array of y values (dependent values) that hold the actual seed function values, 
+     kernel_func-a python function that gives the mathematical kernel 
+     function that we want to convolve our seed function with, 
+     x_prec-precision of the integral (defaults to -infinity, which 
+     the function interpret as estimating the accuracy of the precision 
+     from the precision of the x array)
+       
+       outputs: Xs-an array of the independent variable that is 
+       twice as long as the region over which the kernel function 
+       and seed function are defined. This is the region over which 
+       the convolved function will be defined, xs-array of the independent 
+       variable over which the kernel function and seed function are defined, 
+       kernel_arr-array of kernel values defined over xs, convolved-array of 
+       final convolved function, norm_convolved-array of final convolved function divided by max value of convolved,
        This function takes the convolution of seed_func and kernel func. Note that seed_fun is described by an array for x and y and kernel func must be a python function that take a single variable as a parameter.'''
     
     midpoint = np.median(x)

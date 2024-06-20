@@ -6,16 +6,19 @@ import matplotlib
 from matplotlib.ticker import (MultipleLocator, FormatStrFormatter,
                                AutoMinorLocator)
 import shutil
+import pandas as pd
+import sys
+
 
 sKy_colors = {'light blue':'#63B8FF', 'blue':'#4876FF', 'very dark blue':'#27408B', 
 'blue grey':'#C6E2FF', 'dim cyan':'#98F5FF', 'cyan':'#00FFFF','red':'#FF4040', 
 'mute red':'#EE6363', 'dark mute red':'#CD5555', 'dark red':'#CD2626', 'green':'#00FF7F', 
 'honest green':'#008B45', 'dark green':'#008B45', 'grey':'#8B8989', 'dark grey':'#666666', 
 'orange':'#FF9912', 'purple':'#8E388E', 'magenta':'#FF00FF', 'purple pink':'#FF83FA', 
-'dark purple pink':'#BF3EFF', 'bright brown':'#8B5A00', 'dull brown':'#8B4726', 'mute brown':'#BC8F8F'}
+'dark purple pink':'#BF3EFF', 'bright brown':'#8B5A00', 'dull brown':'#8B4726', 'mute brown':'#BC8F8F',
+'light grey':(0.8, 0.8, 0.8)}
 
 color_schemes = {
-
 "elsa":[sKy_colors["blue"], sKy_colors["blue grey"], 
 sKy_colors["dark purple pink"], sKy_colors["cyan"], sKy_colors["light blue"], 
 sKy_colors["magenta"], sKy_colors["grey"]],
@@ -24,26 +27,54 @@ sKy_colors["magenta"], sKy_colors["grey"]],
 
 "autumn": [sKy_colors['grey'], sKy_colors['mute red'], sKy_colors['orange'], sKy_colors['dark red']],
 
-"2145": [sKy_colors['dark purple pink'], sKy_colors['light blue'], sKy_colors['purple pink'],  sKy_colors['blue'],
- sKy_colors['magenta'],  sKy_colors['very dark blue']],
+"2145": [sKy_colors['dark purple pink'], 
+sKy_colors['light blue'], 
+sKy_colors['purple pink'],  sKy_colors['blue'],
+ sKy_colors['magenta'],  
+ sKy_colors['very dark blue']],
 
-"ocean": [sKy_colors['cyan'], sKy_colors['blue grey'], 
-sKy_colors['light blue'], sKy_colors['blue'], sKy_colors['very dark blue']],
+"ocean": [(0.8, 0.5, 1.0), (0.8, 0.8, 1.0), 
+(0.2, 0.5, 1.0), (0.3, 0.0, 1.0),
+(0.2, 0.8, 1.0),  (0.2, 1.0, 0.8),
+(0.6, 0.8, 0.6)],
 
-"red_blue": [sKy_colors['dark red'], sKy_colors['mute red'], 
-sKy_colors['orange'], sKy_colors['very dark blue'], sKy_colors['blue'], sKy_colors['light blue']],
+"red_blue": [sKy_colors['dark red'], 
+sKy_colors['mute red'], (1.0, 0.6, 0.8),
+sKy_colors['orange'], 
+sKy_colors['very dark blue'], 
+sKy_colors['blue'], sKy_colors['light blue'],
+(0.2, 0.1, 0.6)],
 
-"rainforest_flower":[sKy_colors['honest green'], sKy_colors['grey'], 
-sKy_colors['purple'], sKy_colors['magenta'], sKy_colors['purple pink'], sKy_colors['dark purple pink']],
+"rainforest_flower":[(0.2, 0.6, 0.5),
+(0.8, 0.8, 0.8), (1.0, 0.4, 0.3),( 1.0, 0.5, 0.8),
+(1.0, 0.8, 0.1), (1.0, 0.2, 0.1) ],
 
-"childhood":[sKy_colors['dark purple pink'], sKy_colors['magenta'], 
-sKy_colors['orange'], sKy_colors['green'], sKy_colors['blue'], sKy_colors['red'], sKy_colors['cyan']],
+"childhood":[sKy_colors['dark purple pink'], 
+sKy_colors['orange'], sKy_colors['magenta'], 
+ sKy_colors['green'], sKy_colors['blue'], 
+ sKy_colors['red'], sKy_colors['cyan'],
+ (1.0, 1.0, 0.5)],
 
-"chill": [sKy_colors['light blue'], sKy_colors['blue grey'], sKy_colors['mute red'], 
+"chill": [sKy_colors['light blue'], 
+sKy_colors['blue grey'], sKy_colors['mute red'], 
 sKy_colors['grey'], sKy_colors['purple pink'], 
-sKy_colors['mute brown']],
+sKy_colors['mute brown'], (0.8, 1.0, 0.8),
+(1.0, 0.6, 0.5)],
 
-"icecream": ['black', 'pink', sKy_colors['grey'],  sKy_colors['purple pink']]
+"icecream": ['black', 'pink', sKy_colors['grey'],  sKy_colors['purple pink']],
+
+"0605":[(0.1, 0.6, 0.5), 
+(0.7, 0.6, 0.5), (0.9, 0.6, 0.5), 
+sKy_colors['grey'], (1.0, 0.8, 0.1), 
+(1.0, 0.6, 0.8)
+],
+
+"space_person":[(0.26099, 0.55795, 0.98008), 
+(0.44243, 0.91793, 0.85), 
+(0.49594, 0.15375, 0.5658), 
+(0.3246, 0.20608, 0.53124), 
+(0.14722, 0.43899, 0.49572), 
+(0.21402, 0.19033, 0.45783)]
 
 }
 
@@ -87,6 +118,15 @@ matplotlib.rcParams['mathtext.bf'] = 'serif'
 plt.xticks(fontsize=1.5*W)
 plt.yticks(fontsize=1.5*W)
 
+def get_element_symbol(atomic_number):
+    df = pd.read_csv(os.environ['astro_code_dir']+'/Periodic_Table.csv')
+    element = df.loc[df['AtomicNumber'] == int(atomic_number)]
+    l = list(element['Symbol'])
+    if len(l) == 1:
+        return l[0]
+    else:
+        raise ValueError("Atomic Number: "+str(atomic_number)+" is invalid!")
+
 def rm(file):
     '''inputs: file-string file name of file to be removed
        outputs: none
@@ -95,6 +135,12 @@ def rm(file):
         shutil.rmtree(file)
     elif os.path.isfile(file):
         os.remove(file)
+
+def get_key(dict, value):
+    #finds the key for a given value in a dictionary
+    for k in dict.keys():
+        if dict[k] == value:
+            return k
 
 def get_colors(i, scheme = None):
     return sKy_color_list(i, scheme)
@@ -447,9 +493,7 @@ def set_pretty_legend(plt, fontsize = 1.5*H, ncol = np.nan):
     return plt
 
 
-def get_pretty_plot():
-    W = 15
-    H = 10
+def get_pretty_plot(W = 15, H = 10):
     fig, ax = plt.subplots(figsize=(W, H))
 
     #ax.xaxis.set_major_locator(MultipleLocator(20))
