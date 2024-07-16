@@ -132,7 +132,7 @@ def rm(file):
        outputs: none
        This function deletes a file or folder given the string of the location'''
     if os.path.isdir(file):
-        shutil.rmtree(file)
+        os.system("rm -r "+file)
     elif os.path.isfile(file):
         os.remove(file)
 
