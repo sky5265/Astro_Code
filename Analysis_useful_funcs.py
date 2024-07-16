@@ -459,6 +459,14 @@ def cp(src, dst):
        outputs: dst-name of destination file to copy to
        This function copies a file from src to dst'''
     shutil.copy(src, dst)
+
+
+def mv(src, dst):
+    '''inputs: src-name of source file to copy from
+       outputs: dst-name of destination file to copy to
+       This function copies a file from src to dst'''
+    if os.path.isfile(src) and (os.path.isfile(dst) or os.path.isdir(dst)):
+        shutil.move(src, dst)
         
 def get_order_of_mag(num):
     '''returns order of magnitude for a number passed in. This returns just the exponent, so if you pass in 8.9E-45, it will return -45'''
