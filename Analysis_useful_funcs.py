@@ -210,7 +210,7 @@ def plot_available_fonts(save_loc = 'fonts.png', bold = False):
 def isint(element):
     return is_int(element)
     
-def exists(file):
+def file_exists(file):
     return os.path.exists(file)
     
 def is_int(element):
