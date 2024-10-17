@@ -10,6 +10,8 @@ import pandas as pd
 import sys
 
 
+
+
 sKy_colors = {'light blue':'#63B8FF', 'blue':'#4876FF', 'very dark blue':'#27408B', 
 'blue grey':'#C6E2FF', 'dim cyan':'#98F5FF', 'cyan':'#00FFFF','red':'#FF4040', 
 'mute red':'#EE6363', 'dark mute red':'#CD5555', 'dark red':'#CD2626', 'green':'#00FF7F', 
@@ -135,6 +137,14 @@ def rm(file):
         os.system("rm -r "+file)
     elif os.path.isfile(file):
         os.remove(file)
+
+
+def extract_digits(filename):
+    # Use regex to find all digits in the filename
+    digits = re.findall(r'\d+', filename)
+    # Join the digits and convert to an integer
+    return int(''.join(digits)) if digits else None
+
 
 def get_key(dict, value):
     #finds the key for a given value in a dictionary

@@ -326,8 +326,11 @@ def correct_cosmological_redshift(wavelengths, fluxes, z):
     '''inputs: wavelengths-list of wavelengths for the spectrum that is passed in, fluxes-corresponding list of fluxes for the spectrum, z-cosmological redshift of the obeject emitting this spectrum
        outputs: wavelengths_prog_frame-list of wavelengths of the spectrum in progenitor frame, fluxes_prog_frame-list of corresponding fluxes of the spectrum in progenitor frame
        This function takes an observed spectrum and converts it into a progenitor frame spectrum, given a redshift z'''
-    fluxes_prog_frame = [i*(1+z) for i in fluxes]
-    wavelengths_prog_frame = [i/(1+z) for i in wavelengths]
+    fluxes = np.asarray(fluxes)
+    wavelengths = np.asarray(wavelengths)
+    
+    fluxes_prog_frame = fluxes*(1+z)
+    wavelengths_prog_frame = wavelengths/(1+z)
     
     return wavelengths_prog_frame, fluxes_prog_frame
 
